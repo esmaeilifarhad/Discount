@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fa">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+
+    <!-- <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"> -->
+
+    <!--font-awesome-->
+
+
+
+    <link href="https://portal.golrang.com/SiteAssets/CSS/kendo.custom.css" rel="stylesheet" type="text/css" />
+    <link href="https://portal.golrang.com/SiteAssets/CSS/kendo.metro.BlueMetro.min.css" rel="stylesheet"
+        type="text/css" />
+    <link href="https://portal.golrang.com/SiteAssets/CSS/kendo.common.min.css" rel="stylesheet" type="text/css" />
+    <link href="https://portal.golrang.com/SiteAssets/CSS/kendo.default.min.css" rel="stylesheet" type="text/css" />
+    <link href="https://portal.golrang.com/SiteAssets/CSS/kendo.rtl.min.css" rel="stylesheet" type="text/css" />
+
+    <link href="https://portal.golrang.com/SiteAssets/CSS/bootstrap.css" rel="stylesheet" type="text/css" />
+    <link href="https://portal.golrang.com/SiteAssets/CSS/bootstrap-rtl.min.css" rel="stylesheet" type="text/css" />
+
+
+    <script src="https://portal.golrang.com/SiteAssets/JS/kendo.all.min.js" type="text/javascript"
+        language="javascript"></script>
+    <script src="https://portal.golrang.com/SiteAssets/JS/kendo.web.min.js" type="text/javascript"
+        language="javascript"></script>
+    <script src="https://portal.golrang.com/SiteAssets/JS/kendo.core.min.js" type="text/javascript"
+        language="javascript"></script>
+
+    <!-- <script src="https://portal.golrang.com/SiteAssets/CSS/kendo.core.min.js" type="text/javascript"
+        language="javascript"></script> -->
+
+
+
+    <!--Persian DatePickers-->
+
+    <link rel="stylesheet"
+        href="https://portal.golrang.com/HR/Services/SiteAssets/datePicker/persianDatepicker-master/css/persianDatepicker-default.css" />
+
+    <script
+        src="https://portal.golrang.com/HR/Services/SiteAssets/datePicker/persianDatepicker-master/js/persianDatepicker.min.js"></script>
+    <script>
+        $("#elementId, .elementClass").persianDatepicker();
+    </script>
+    <!--jalaly/moment-->
+    <script src="https://portal.golrang.com/HR/Services/SiteAssets/js/Jalaly/moment.js"></script>
+    <script src="https://portal.golrang.com/HR/Services/SiteAssets/js/Jalaly/moment.min.js"></script>
+    <script src="https://portal.golrang.com/HR/Services/SiteAssets/js/Jalaly/moment-jalaali.js"></script>
+    <!--pnp-->
+    <script src="https://portal.golrang.com/SiteAssets/JS/pnp.min.js" type="text/javascript"></script>
+    <script src="https://portal.golrang.com/SiteAssets/JS/pnp.js" type="text/javascript"></script>
+
+    <!--main linkkkk-->
+    <script src="https://portal.golrang.com/SiteAssets/JS/Utility/Utility.js" type="text/javascript"
+    language="javascript"></script>
+
+    <script src="https://portal.golrang.com/services/discount/SiteAssets/JS/Discount_Request.js" type="text/javascript"
+        language="javascript"></script>
+    <link href="https://portal.golrang.com/services/discount/SiteAssets/CSS/Discount_Request.css" rel="stylesheet"
+        type="text/css" />
+
+    <link href="https://portal.golrang.com/SiteAssets/CSS/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="https://portal.golrang.com/SiteAssets/CSS/bootstrap-rtl.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://portal.golrang.com/SiteAssets/JS/bootstrap.min.js" type="text/javascript"
+        language="javascript"></script>
+
+
+    <script src="https://portal.golrang.com/ictrequests/SiteAssets/JS/loadingoverlay.js" type="text/javascript"
+        language="javascript"></script>
+    <script src="https://portal.golrang.com/ictrequests/SiteAssets/JS/loadingoverlay.min.js" type="text/javascript"
+        language="javascript"></script>
+
+
+    <script src="https://portal.golrang.com/ictrequests/SiteAssets/JS/sweetalert2@9.js"></script>
+    <!-- https://sweetalert2.github.io/#examples -->
+
+
+
+</head>
+
+<body>
+
+    <div class="container mainPage" >
+
+   
+        <div class="row" >
+            <div class="col-sm-4" style="padding-right: 0px; padding-left: 0px;"">
+                <div id="ShowUser" >
+
+                </div>
+            </div>
+            <div class="col-sm-4">
+               
+                <table>
+                    <tr>
+                        <td>  شماره فاکتور :  </td>
+
+                        <td><input style="color: black;" type="number" name="factorSearch" placeholder="298019050" value="298019006"/></td>
+
+                        <td><input style="background-color:  #1383d6;" type="button" value="جستجو" onclick="FindFactor()" /></td>
+                       
+                    </tr>
+                </table>
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div id="ShowLogBudget" >
+
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12 showFactorMain">
+                <div id="ShowFactorHeader"  ></div>
+                <div id="ShowFactorDetail"  ></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal    افزایش بودجه -->
+    <div class="modal fade" id="ModaDetail" role="dialog" style="z-index: 99100;text-align: right;">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+             
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+
+</html>
