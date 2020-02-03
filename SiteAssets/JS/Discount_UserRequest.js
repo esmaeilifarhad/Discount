@@ -88,7 +88,7 @@ async function showCartabl() {
 
 
     var table = "<table class='table'>"
-    table += "<tr><th>ردیف</th><th>کاربر</th><th>شعبه</th><th>بودجه</th><th>افزایش بودجه</th><th>کاهش بودجه</th></tr>"
+    table += "<tr><th>ردیف</th><th>کاربر</th><th>شعبه</th><th>بودجه</th><th>افزایش بودجه/کاهش بودجه</th></tr>"
     for (let index = 0; index < UsersInGroup.length; index++) {
 
         var resUsersBranch = UsersBranch.find(x => x.User.Id == UsersInGroup[index].Id);
@@ -97,8 +97,7 @@ async function showCartabl() {
             table += "<tr class='rows' LoginTitle='" + removeComma(UsersInGroup[index].Title.toString()) + "' LoginName=" + UsersInGroup[index].Id + " type='C' dataId=" + 0 + "><td>" + (index + 1) + "</td><td>" + UsersInGroup[index].Title + "</td>"
             table += "<td>" + MyLinks + "</td>"
             table += "<td>0</td>"
-            table += "<td>افزایش</td>"
-            table += "<td>کاهش</td>"
+            table += "<td>افزایش/کاهش</td>"
             table += "</tr>"
         }
         else {
@@ -176,11 +175,11 @@ async function showCartabl() {
                 for (let index3 = 0; index3 < Detail_DiscountVal.length; index3++) {
                     minus += parseInt(Detail_DiscountVal[index3].DiscountVal);
                 }
-                table += "<td style=color:"+((sum- minus)>0?"green":"red")+">" +(sum- minus)+ "</td>"
+                table += "<td style=color:"+((sum- minus)>0?"green":"red")+">" +SeparateThreeDigits((sum- minus))+ "</td>"
             }
 
-            table += "<td><span onclick='showModalIncreaseBudget(" + resUsersBranch.Id + ")' style='color:green' class='fa fa-plus'></span></td>"
-            table += "<td><span onclick='showModalDecreaseBudget(" + resUsersBranch.Id + ")' style='color:red' class='fa fa-minus'></span></td>"
+            table += "<td><span onclick='showModalIncreaseBudget(" + resUsersBranch.Id + ")' style='color:green' class='fa fa-plus'></span>/"
+            table += "<span onclick='showModalDecreaseBudget(" + resUsersBranch.Id + ")' style='color:red' class='fa fa-minus'></span></td>"
             table += "</tr>"
         }
     }

@@ -1,6 +1,12 @@
   .w3-card, .w3-card-2 {
    box-shadow: none 
 }  
+
+.col-sm-12.showFactorMain,#ShowFactorHeader,#ShowFactorDetail {
+  border: 1px solid black;
+  margin: 1px;
+}
+
 .modal-dialog {
   margin-top: 280px!important;
 }
@@ -27,6 +33,7 @@ div#ShowFactorHeader {
 #ShowFactorDetail table tr th{
   text-align: center;
 }
+.mainPage div,
 #ShowUser{
 
   background-image: linear-gradient(to right, rgba(255,255,255), #ababab);
@@ -222,6 +229,7 @@ a.navbar-brand {
 h3 {
     color: white;
     text-shadow: 1px 1px 2px rgb(233, 214, 45), 0 0 25px rgb(115, 115, 212), 0 0 5px rgb(64, 219, 134);
+    text-align: center;
   }
 
  .k-window-titlebar span {

@@ -65,13 +65,12 @@ async function showFormRequest() {
     //-------------------------------------
 
     var Factor = _Factor
-    var table = "<table class='table'>"
+    var table = "<h3>اطلاعات فاکتور</h3><table class='table'>"
 
     table += "<tr >"
     table += "<td class='onvan'>شماره فاکتور</td>"
     table += "<td>" + Factor[0].SaleDocCode + "</td>"
     table += "<td class='onvan'>تاریخ درخواست</td>"
-    debugger
     table += "<td>" + foramtDate(Factor[0].OrderDate) + "</td>"
     table += "</tr>"
     table += "<tr>"
@@ -83,22 +82,42 @@ async function showFormRequest() {
     table += "<tr>"
     table += "<td class='onvan'>کدمشتری</td>"
     table += "<td>" + Factor[0].CustomerCode + "</td>"
-    table += "<td></td>"
-    table += "<td></td>"
+    table += "<td class='onvan'>نوع درخواست</td>"
+    table += "<td><select id='DarTaahod'>" +
+        "<option value='shobe'>در تعهد شعبه</option>" +
+        "<option value='Markaz'>در تعهد دفتر مرکزی</option>" +
+        "<option value='Tolid'>در تعهد شرکت تولیدی</option>" +
+        "</select></td>"
     table += "</tr>"
     table += "</table>"
 
     $("#ShowFactorHeader table").remove()
+    $("#ShowFactorHeader h3").remove()
 
     $("#ShowFactorHeader").append(table)
 
     table = "<p><input style='background-color:  #29d663;' type='button' value='ذخیره' onclick='SaveFactor()' id='btnSave'/></p>"
     table += "<table class='table-bordered'>"
-    table += "<tr><th>ردیف</th>"
-    table += "<th>کانال فروش</th><th>کد کالا</th><th>نام کالا</th><th>کد تامین کننده</th><th>نام تامین کننده</th>"
-    table += "<th>تعداد در کارتن</th><th>تعداد</th><th>فی کالا</th><th>درصد تخفیف نوعی</th>"
-    table += "<th>درصد تخفیف پلکانی</th><th>درصد تخفیف ویژه</th><th>درصد مالیات و عوارض</th><th>مبلغ تخفیف نوعی</th><th>مبلغ تخفیف پلکانی</th>"
-    table += "<th>مبلغ تخفیف ویژه</th><th>مبلغ کل تخفیفات</th><th>مبلغ نهایی بدون مالیات و عوارض</th><th>مبلغ نهایی با مالیات و عوارض</th><th>مقدار تخفیف</th><th>نمایش بیشتر</th></tr>"
+    table += "<tr>" +
+        "<th>ردیف</th>" +
+        "<th>کانال فروش</th><th>کد کالا</th><th>نام کالا</th>" +
+        "<th>کد تامین کننده</th>" +
+        "<th>نام تامین کننده</th>" +
+        "<th>تعداد در کارتن</th>" +
+        "<th>تعداد</th><th>فی کالا</th>" +
+        "<th>درصد تخفیف نوعی</th>" +
+        "<th>درصد تخفیف پلکانی</th>" +
+        "<th>درصد تخفیف ویژه</th>" +
+        "<th>درصد مالیات و عوارض</th>" +
+        "<th>مبلغ تخفیف نوعی</th>" +
+        "<th>مبلغ تخفیف پلکانی</th>" +
+        "<th>مبلغ تخفیف ویژه</th>" +
+        "<th>مبلغ کل تخفیفات</th>" +
+        "<th>مبلغ نهایی بدون مالیات و عوارض</th>" +
+        "<th>مبلغ نهایی با مالیات و عوارض</th>" +
+        "<th>درصد تخفیف</th>" +
+        "<th>مقدار تخفیف</th><th>نمایش بیشتر</th>" +
+        "</tr>"
     for (let index = 0; index < Factor.length; index++) {
         table += "<tr class='rows' DataId=" + index + ">"
         table += "<td>" + (index + 1) + "</td>"
@@ -116,8 +135,8 @@ async function showFormRequest() {
 
         table += "<td>" + Factor[index].NoInpack + "</td>"
         // table += "<td>" + Factor[index].FinalBox + "</td>"
-        table += "<td>" + Factor[index].Famount + "</td>"
-        table += "<td>" + Factor[index].UnitPrice + "</td>"
+        table += "<td class='Famount'>" + Factor[index].Famount + "</td>"
+        table += "<td class='UnitPrice'>" + Factor[index].UnitPrice + "</td>"
 
         table += "<td>" + Factor[index].Cdispercent + "</td>"
         table += "<td>" + Factor[index].Gdispercent + "</td>"
@@ -133,7 +152,8 @@ async function showFormRequest() {
 
         table += "<td>" + SeparateThreeDigits(Factor[index].FinalPriceWithTax) + "</td>"
         table += "<td>" + SeparateThreeDigits(Factor[index].FinalPriceWithoutTax) + "</td>"
-        table += "<td style='color:black'><input type='number' class='discountVal'/></td>"
+        table += "<td style='color:black'><input type='number' class='discountVal' onkeyUp='tt()' onchange='CalulateDarsad(this," + Factor[index].Famount + "," + Factor[index].UnitPrice + ")'/></td>"
+        table += "<td><span>...</span></td>"
 
         table += "<td><span  onclick='showDetail(" + Factor[index].Productcode + ")' style='color:blue' class='fa fa-info'></span></td>"
         table += "</tr>"
@@ -149,7 +169,7 @@ async function ShowUserInfo() {
 
     var BudgetIncrease = await Get_BudgetIncrease();
     var _sum = 0
-    _LogTransactionArray=[]
+    _LogTransactionArray = []
     for (let index = 0; index < BudgetIncrease.length; index++) {
 
         if (BudgetIncrease[index].IsIncrease == true) {
@@ -173,13 +193,15 @@ async function ShowUserInfo() {
             types[SaleDocCode] = [];
         }
 
-        types[SaleDocCode].push({ id: DiscountVal[index2].Id, DiscountVal: DiscountVal[index2].DiscountVal, DateCreate: DiscountVal[index2].MasterId.DateCreated });
+        types[SaleDocCode].push({ id: DiscountVal[index2].Id,UnitPrice: DiscountVal[index2].UnitPrice,Famount: DiscountVal[index2].Famount, DiscountVal: DiscountVal[index2].DiscountVal, DateCreate: DiscountVal[index2].MasterId.DateCreated });
 
 
 
         // LogTransactionObj = { BudgetPrice: parseInt(DiscountVal[index2].DiscountVal), type: 0, type2: "فاکتور", DateCreate: DiscountVal[index2].MasterId.DateCreated, SaleDocCode: DiscountVal[index2].MasterId.SaleDocCode }
 
-        _sum -= DiscountVal[index2].DiscountVal;
+       // (val * Famount * UnitPrice) / 100
+
+        _sum -= (DiscountVal[index2].DiscountVal*DiscountVal[index2].Famount*DiscountVal[index2].UnitPrice)/100;
         //_LogTransactionArray.push(LogTransactionObj)
 
     }
@@ -188,8 +210,9 @@ async function ShowUserInfo() {
     for (var SaleDocCode in types) {
         sumDiscountVal = 0
         for (let index = 0; index < types[SaleDocCode].length; index++) {
-
-            sumDiscountVal += parseInt(types[SaleDocCode][index].DiscountVal);
+            debugger
+            var MablaghTakhfifi=(parseFloat(types[SaleDocCode][index].DiscountVal)* parseFloat(types[SaleDocCode][index].UnitPrice)* parseFloat(types[SaleDocCode][index].Famount))/100
+            sumDiscountVal += parseInt(MablaghTakhfifi);
 
         }
 
@@ -212,8 +235,8 @@ async function ShowUserInfo() {
     table += "<tr class='rows'>"
     table += "<td class='onvan'>شعبه</td><td>" + UsersBranch[0].Branch.Title + "</td>"
     table += "</tr>"
-    table += "<tr class='rows'>"
-    table += "<td class='onvan'>دارایی</td><td>" + _sum + "</td>"
+    table += "<tr class='rows' style='color:red'>"
+    table += "<td class='onvan' >دارایی</td><td>" + SeparateThreeDigits(_sum) + "</td>"
     table += "</tr>"
     table += "<tr class='rows'>"
     table += "<td class='onvan'>تاریخچه تراکنش ها</td><td><input type='button' value='نمایش' style='background-color:#59b351'  onclick='showLogBudget()'/></td>"
@@ -259,16 +282,23 @@ function showLogBudget() {
 
 
 
-    var table = "<table class='table'>"
+    var table = "<h3>تاریخچه</h3><table class='table'>"
     table += "<tr><th>نوع</th><th>مبلغ</th><th>تاریخ</th><th>فاکتور</th><th>مسئول مربوطه</th></tr>"
 
 
     for (let index = 0; index < _LogTransactionArray.length; index++) {
-        table += "<tr  style=color:" + (_LogTransactionArray[index].type == 1 ? "green" : "red") + "><td>" + _LogTransactionArray[index].type2 + "</td><td>" + _LogTransactionArray[index].BudgetPrice + "</td><td>" + foramtDate(_LogTransactionArray[index].DateCreate) + "</td><td>" + (_LogTransactionArray[index].SaleDocCode == undefined ? "..." : _LogTransactionArray[index].SaleDocCode) + "</td><td>" + (_LogTransactionArray[index].WhoIncrease == undefined ? "..." : _LogTransactionArray[index].WhoIncrease) + "</td></tr>"
+        table += "<tr  style=color:" + (_LogTransactionArray[index].type == 1 ? "green" : "red") + ">"+
+        "<td>" + _LogTransactionArray[index].type2 + "</td>"+
+        "<td>" + SeparateThreeDigits(_LogTransactionArray[index].BudgetPrice) + "</td>"+
+        "<td>" + foramtDate(_LogTransactionArray[index].DateCreate) + "</td>"+
+        "<td>" + (_LogTransactionArray[index].SaleDocCode == undefined ? "..." : _LogTransactionArray[index].SaleDocCode) + "</td>"+
+        "<td>" + (_LogTransactionArray[index].WhoIncrease == undefined ? "..." : _LogTransactionArray[index].WhoIncrease) + "</td>"+
+        "</tr>"
     }
 
     table += "</table>"
     if (_showLogStatus == false) {
+        $("#ShowLogBudget h3").remove()
         $("#ShowLogBudget table").remove()
     }
     else {
@@ -280,7 +310,7 @@ function showLogBudget() {
 
 }
 function ShowMessage(arrayMessage) {
-    debugger
+
     var table = "<table class='table table-bordered'>"
     for (let index = 0; index < arrayMessage.length; index++) {
         //const element = array[index];
@@ -344,7 +374,7 @@ function Get_Detail_DiscountVal() {
         $pnp.sp.web.lists.
             getByTitle("Discount_Detail").
             items.
-            select("MasterId/IdUser,MasterId/SaleDocCode,MasterId/Id,MasterId/Title,Id,Title,DiscountVal,MasterId/DateCreated").
+            select("MasterId/IdUser,MasterId/SaleDocCode,MasterId/Id,MasterId/Title,Id,Title,DiscountVal,MasterId/DateCreated,Famount,UnitPrice").
             filter("(MasterId/IdUser eq " + _spPageContextInfo.userId + ")").
             expand("MasterId").
             get().
@@ -439,7 +469,8 @@ function create_Master(Record, sum) {
             TitleUser: _spPageContextInfo.userLoginName,
             DateCreated: today,
             Step: 1,
-            CID: CurrentCID
+            CID: CurrentCID,
+            TypeTakhfif: Record.TypeTakhfif
         }).then(function (item) {
             resolve(item);
         }).catch(error => {
@@ -485,18 +516,38 @@ function create_Detail(Record, MasterId) {
 
 //-------------------------------------Find Factor
 async function FindFactor() {
+    $.LoadingOverlay("show");
+
     var Factor = $("input[name='factorSearch']").val();
 
     var Factor = await serviceDiscount(Factor);
+
     Factor = Factor.lstInvoice
     _Factor = Factor
-    showFormRequest()
+    if (Factor.length == 0) {
+        $("#ShowFactorHeader table").remove()
+        $("#ShowFactorDetail table").remove()
+        $("#ShowFactorDetail p").remove()
+        $("#ShowFactorHeader h3").remove()
+        $("#ShowFactorHeader").append("<h3>فاکتور مورد نظر یافت نشد</h3>")
+        $.LoadingOverlay("hide");
+
+    }
+    else {
+        $.LoadingOverlay("hide");
+        showFormRequest()
+    }
 
     //alert(Factor)
 }
 async function SaveFactor() {
     $('#btnSave').prop('disabled', true);
     $.LoadingOverlay("show");
+
+    //var DarTaahod = $("#DarTaahod option:selected").text();
+    var TypeTakhfif = $("#DarTaahod option:selected").val();
+
+
     var arrayMessage = []
     var _sum = 0
     $("#ShowFactorDetail table  .rows").each(function () {
@@ -504,8 +555,13 @@ async function SaveFactor() {
         var DataId = $(this).attr("DataId")
 
         if ($(this).find(".discountVal").val() != "") {
-            _Factor[DataId].DiscountVal = parseInt($(this).find(".discountVal").val())
-            _sum += parseInt($(this).find(".discountVal").val())
+            
+            var discountVal=parseFloat($(this).find(".discountVal").val())
+            var Famount=parseFloat($(this).find(".Famount").text())
+            var UnitPrice=parseFloat($(this).find(".UnitPrice").text())
+
+            _Factor[DataId].DiscountVal = parseFloat($(this).find(".discountVal").val())
+            _sum += (discountVal*Famount*UnitPrice)/100
         }
         else {
             _Factor[DataId].DiscountVal = 0
@@ -532,6 +588,9 @@ async function SaveFactor() {
 
         var statusSave = false;
         //----master
+
+        _Factor[0].TypeTakhfif = TypeTakhfif
+
         var Master = await create_Master(_Factor[0], _sum)
         var MasterId = Master.data.ID
 
@@ -558,6 +617,18 @@ async function SaveFactor() {
     }
 
 }
+function CalulateDarsad(thiss, Famount, UnitPrice) {
+
+    //console.log($(thiss))
+    var val = $(thiss).val()
+    //console.log($(thiss).parent().next().find("span"))
+    $(thiss).parent().next().find("span").remove()
+    $(thiss).parent().next().append("<span>"+SeparateThreeDigits((val * Famount * UnitPrice) / 100)+"</span>")
+    // alert(SeparateThreeDigits((val*Famount*Famount)/100))
+}
+// function tt(thiss){
+//     alert("zz")
+// }
 //-------------کاربران ثبت کننده تخفیف    223---------------------- Users in Group
 function IsUserInGroup(id) {
     //  کاربران ثبت کننده تخفیف    223

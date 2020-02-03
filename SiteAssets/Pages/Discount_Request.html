@@ -59,7 +59,7 @@
 
     <!--main linkkkk-->
     <script src="https://portal.golrang.com/SiteAssets/JS/Utility/Utility.js" type="text/javascript"
-    language="javascript"></script>
+        language="javascript"></script>
 
     <script src="https://portal.golrang.com/services/discount/SiteAssets/JS/Discount_Request.js" type="text/javascript"
         language="javascript"></script>
@@ -87,41 +87,76 @@
 
 <body>
 
-    <div class="container mainPage" >
+    <div class="container mainPage">
 
-   
-        <div class="row" >
-            <div class="col-sm-4" style="padding-right: 0px; padding-left: 0px;"">
-                <div id="ShowUser" >
+
+        <div class="row">
+            <div class="col-sm-4" style="padding-right: 0px; padding-left: 0px;">
+                <div id="ShowUser">
 
                 </div>
             </div>
             <div class="col-sm-4">
-               
-                <table>
+
+                <table class="table">
                     <tr>
-                        <td>  شماره فاکتور :  </td>
+                        <td> شماره فاکتور  </td>
+                    </tr>
+                    <tr>
+                        <td><input style="color: black;" type="number" name="factorSearch" placeholder="298019050"
+                                value="298019006" /></td>
+                            </tr>
+                            <tr>
+                        <td><input style="background-color:  #1383d6;" type="button" value="جستجو"
+                                onclick="FindFactor()" /></td>
 
-                        <td><input style="color: black;" type="number" name="factorSearch" placeholder="298019050" value="298019006"/></td>
-
-                        <td><input style="background-color:  #1383d6;" type="button" value="جستجو" onclick="FindFactor()" /></td>
-                       
                     </tr>
                 </table>
+
+            </div>
+            <div class="col-sm-4">
+                <table class="table">
+                    <tr>
+                        <td colspan="2"> درخواست افزایش بودجه </td>
+                    </tr>
+                    <tr>
+                        <td>مقدار به تومان  </td>
+                        <td><input style="color: black;" type="number" name="factorSearch" placeholder="تومان" /></td>
+
+                    </tr>
+                    <tr>
+                        <td>توضیحات  </td>
+                        <td><textarea name='comment' form='usrform' placeholder='توضیحات ...'></textarea></td>
+                    </tr>
+                    <tr>
+                        <td><input style="background-color:  #1383d6;" type="button" value="ثبت درخواست"
+                                onclick="FindFactor()" /></td>
+                        <td><input style="background-color:  #59b351;" type="button" value="درخواست ها من "
+                                onclick="FindFactor()" /></td>
+
+                    </tr>
+                </table>
+
+
+
 
             </div>
         </div>
         <div class="row">
             <div class="col-sm-12">
-                <div id="ShowLogBudget" >
+                <div id="ShowLogBudget">
 
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col-sm-12 showFactorMain">
-                <div id="ShowFactorHeader"  ></div>
-                <div id="ShowFactorDetail"  ></div>
+           
+             
+                <div id="ShowFactorHeader"></div>
+                <div id="ShowFactorDetail"></div>
+                
+           
             </div>
         </div>
     </div>
@@ -136,7 +171,7 @@
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
-             
+
                 </div>
                 <div class="modal-footer">
                 </div>
