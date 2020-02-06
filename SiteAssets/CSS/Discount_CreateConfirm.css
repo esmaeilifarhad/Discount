@@ -2,6 +2,11 @@
    box-shadow: none 
 }  
 
+#takhsisBudget table td{
+padding: 5px;
+border: 1px solid black;
+text-align: center;
+}
 .col-sm-12.showFactorMain,#ShowFactorHeader,#ShowFactorDetail {
   border: 1px solid black;
   margin: 1px;
@@ -34,14 +39,14 @@ div#ShowFactorHeader {
   text-align: center;
 }
 .mainPage div,
-#ShowUser{
+/* #ShowUser{
 
   background-image: linear-gradient(to right, rgba(255,255,255), #ababab);
-}
+} 
 .showFactorMain{
-  /* background-image: linear-gradient(to right, rgba(255,255,255), #ababab); */
   background-color: #cccccc;
 }
+*/
 #ShowUsers table tr td select{
   color: black;
 }
@@ -231,46 +236,47 @@ h3 {
     text-shadow: 1px 1px 2px rgb(233, 214, 45), 0 0 25px rgb(115, 115, 212), 0 0 5px rgb(64, 219, 134);
     text-align: center;
   }
-
+/*
  .k-window-titlebar span {
 
-   /* background-color:white;*/
-    -webkit-animation-name: example; /* Safari 4.0 - 8.0 */
-    -webkit-animation-duration:3s; /* Safari 4.0 - 8.0 */
+  
+    -webkit-animation-name: example; 
+    -webkit-animation-duration:3s; 
     animation-name: example;
     animation-duration: 3s;
   }
   
-  /* Safari 4.0 - 8.0 */
+
   @-webkit-keyframes example {
     from {background-color: white;}
     to {background-color: gray;}
   }
   
-  /* Standard syntax */
+  
   @keyframes example {
     from {background-color: white;}
     to {background-color: gray;}
   }
+  */
   #message a{
     font-weight: bolder;
   color:blue;
   }
 
 
-
+/*
   .k-window-titlebar span {
   position: relative;
-  -webkit-animation-name: k-window-titlebar; /* Safari 4.0 - 8.0 */
-  -webkit-animation-duration: 4s; /* Safari 4.0 - 8.0 */
-  -webkit-animation-delay: 2s; /* Safari 4.0 - 8.0 */
+  -webkit-animation-name: k-window-titlebar; 
+  -webkit-animation-duration: 4s; 
+  -webkit-animation-delay: 2s; 
   animation-name: k-window-titlebar;
   animation-duration: 4s;
   animation-delay: -2s;
 
 }
 
-  /* Safari 4.0 - 8.0 */
+
   
   @-webkit-keyframes k-window-titlebar {
     0%   { right:0px; top:0px;}
@@ -280,7 +286,7 @@ h3 {
     100% { right:0px; top:0px;}
   }
   
-  /* Standard syntax */
+
   @keyframes k-window-titlebar {
     0%   { right:0px; top:0px;color:red}
     25%  { right:200px; top:0px;color:blue}
@@ -288,7 +294,7 @@ h3 {
     75%  { right:600px; top:0px;}
     100% { right:0px; top:0px;}
   }
-  
+  */
   .moshakhast{
     background-image: linear-gradient(to right, rgba(255,0,0,0), #9270e2);
   }

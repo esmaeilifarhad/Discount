@@ -60,13 +60,13 @@
     <!--main linkkkk-->
     <script src="https://portal.golrang.com/SiteAssets/JS/Utility/Utility.js" type="text/javascript"
         language="javascript"></script>
-   
 
-    <script src="https://portal.golrang.com/services/discount/SiteAssets/JS/Discount_CreateConfirm.js" type="text/javascript"
-        language="javascript"></script>
+
+    <script src="https://portal.golrang.com/services/discount/SiteAssets/JS/Discount_CreateConfirm.js"
+        type="text/javascript" language="javascript"></script>
     <link href="https://portal.golrang.com/services/discount/SiteAssets/CSS/Discount_CreateConfirm.css" rel="stylesheet"
         type="text/css" />
-    
+
 
 
     <link href="https://portal.golrang.com/SiteAssets/CSS/bootstrap.min.css" rel="stylesheet" type="text/css" />
@@ -90,11 +90,55 @@
 
 <body>
     <div class="container mainPage">
-        <div class="row">
-            <div class="col-sm-12">
-                <div id="showCreateBranch"></div>
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" onclick="ShowBranch()" data-toggle="tab" href="#home">تعریف تاییدات </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="ShowMoavenat()"  data-toggle="tab" href="#menu1">تخصیص معاونت به شعبه</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="ShowMoavenatTakhsisBudget()" data-toggle="tab" href="#menu2">تخصیص بودجه به معاونت توسط مدیر عامل</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="ShowShoabTakhsisBudget()" data-toggle="tab" href="#menu3">تخصیص بودجه به شعب توسط معاونت</a>
+            </li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content">
+            <div class="tab-pane container active" id="home">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div id="showCreateBranch"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane container fade" id="menu1">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div id="showBranchMoavenat"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane container fade" id="menu2">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div id="showMoavenatTakhsis"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane container fade" id="menu3">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div id="showShoabTakhsis"></div>
+                    </div>
+                </div>
             </div>
         </div>
+
+        
     </div>
 
     <!-- Modal    افزایش بودجه -->
@@ -120,19 +164,20 @@
     <div id="window" style="display:none">
         <ul class="nav nav-tabs">
             <!-- <li class="active"><a data-toggle="tab" href="#home">فاکتور</a></li> -->
-            <li><a data-toggle="tab" href="#home">فاکتور</a></li>
-            <li><a data-toggle="tab" href="#menu1">تاریخچه</a></li>
+            <li><a data-toggle="tab" href="#F1">فاکتور</a></li>
+            <li><a data-toggle="tab" href="#F2">تاریخچه</a></li>
             <!-- <li><a data-toggle="tab" href="#menu2">Menu 2</a></li> -->
         </ul>
 
         <div class="tab-content" style="    border: 1px solid black;">
-            <div id="home" class="tab-pane fade in active" style="background-color: antiquewhite;padding: 6px;">
+            <div id="F1" class="tab-pane fade in active" style="background-color: antiquewhite;padding: 6px;">
                 <h3>نمایش فاکتور</h3>
-                <div><input type="button" id="btnSave"  onclick='save()' value="ذخیره" style="background-color: rgb(22, 184, 103);margin: 1px;"/></div>
-             
+                <div><input type="button" id="btnSave" onclick='save()' value="ذخیره"
+                        style="background-color: rgb(22, 184, 103);margin: 1px;" /></div>
+
                 <div id="confirm1" style="background-color: azure;"></div>
             </div>
-            <div id="menu1" class="tab-pane fade">
+            <div id="F2" class="tab-pane fade">
                 <h3>تاریخچه اقدامات</h3>
                 <div id="Log1"></div>
             </div>
@@ -140,6 +185,26 @@
                 <h3>Menu 2</h3>
                 <p>Some content in menu 2.</p>
             </div> -->
+        </div>
+    </div>
+    
+    <div id="window2" style="display:none">
+        <ul class="nav nav-tabs">
+            <!-- <li class="active"><a data-toggle="tab" href="#home">فاکتور</a></li> -->
+            <li><a data-toggle="tab" href="#B1">تخصیص بودجه</a></li>
+            <li><a data-toggle="tab" href="#B2">تاریخچه </a></li>
+
+        </ul>
+
+        <div class="tab-content" style="border: 1px solid black;">
+            <div id="B1" class="tab-pane fade in active" style="background-color: antiquewhite;padding: 6px;">
+                <h3>تخصیص بودجه</h3>
+                <div id="takhsisBudget" ></div>
+            </div>
+            <div id="B2" class="tab-pane fade" style="background-color: antiquewhite;padding: 6px;">
+                <h3>تاریخچه</h3>
+                <div id="takhsisBudget2" ></div>
+            </div>
         </div>
     </div>
 
