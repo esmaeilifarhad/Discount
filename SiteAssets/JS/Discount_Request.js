@@ -44,6 +44,14 @@ const Obj_Discount_Detail = {
     OrderBy: "Id",
     Is_Increase: true
 }
+const Obj_Discount_BaseData = {
+    NameList: "Discount_BaseData",
+    Select: "Id,Title,Code,Order",
+    Filter: "",
+    Expand: "",
+    OrderBy: "Order",
+    Is_Increase: true
+}
 
 
 /*
@@ -82,6 +90,10 @@ $(document).ready(function () {
 
 async function showFormRequest() {
 
+    Obj_Discount_BaseData.OrderBy = "Id"
+    Obj_Discount_BaseData.Is_Increase = true
+    Obj_Discount_BaseData.Filter = "(Code eq " + 1 + ")"
+    var Discount_BaseData = await get_Records(Obj_Discount_BaseData)
 
     //-------------------------------------
 
@@ -104,11 +116,12 @@ async function showFormRequest() {
     table += "<td class='onvan'>کدمشتری</td>"
     table += "<td>" + Factor[0].CustomerCode + "</td>"
     table += "<td class='onvan'>نوع درخواست</td>"
-    table += "<td><select id='DarTaahod'>" +
-        "<option value='shobe'>در تعهد شعبه</option>" +
-        "<option value='Markaz'>در تعهد دفتر مرکزی</option>" +
-        "<option value='Tolid'>در تعهد شرکت تولیدی</option>" +
-        "</select></td>"
+    table += "<td><select id='DarTaahod'>" 
+    for (let index = 0; index < Discount_BaseData.length; index++) {
+        table += "<option value="+Discount_BaseData[index].Id+">"+Discount_BaseData[index].Title+"</option>" 
+        
+    }
+    table += "</select></td>"
     table += "</tr>"
     table += "</table>"
 
@@ -124,6 +137,9 @@ async function showFormRequest() {
         "<th>کانال فروش</th><th>کد کالا</th><th>نام کالا</th>" +
         "<th>کد تامین کننده</th>" +
         "<th>نام تامین کننده</th>" +
+        "<th>کد برند</th>" +
+        "<th>نام برند</th>" +
+
         "<th>تعداد در کارتن</th>" +
         "<th>تعداد</th><th>فی کالا</th>" +
         "<th>درصد تخفیف نوعی</th>" +
@@ -153,7 +169,9 @@ async function showFormRequest() {
 
         table += "<td>" + Factor[index].SuppCode + "</td>"
         table += "<td>" + Factor[index].SuppName + "</td>"
-
+        table += "<td>" + Factor[index].BrandId + "</td>"
+        table += "<td>" + Factor[index].BrandDesc + "</td>"
+                                       
         table += "<td>" + Factor[index].NoInpack + "</td>"
         // table += "<td>" + Factor[index].FinalBox + "</td>"
         table += "<td class='Famount'>" + Factor[index].Famount + "</td>"
@@ -173,7 +191,7 @@ async function showFormRequest() {
 
         table += "<td>" + SeparateThreeDigits(Factor[index].FinalPriceWithTax) + "</td>"
         table += "<td>" + SeparateThreeDigits(Factor[index].FinalPriceWithoutTax) + "</td>"
-        table += "<td style='color:black'><input type='number' class='discountVal' onkeyUp='tt()' onchange='CalulateDarsad(this," + Factor[index].Famount + "," + Factor[index].UnitPrice + ")'/></td>"
+        table += "<td style='color:black'><input type='number' class='discountVal'  onchange='CalulateDarsad(this," + Factor[index].Famount + "," + Factor[index].UnitPrice + ")'/></td>"
         table += "<td><span>...</span></td>"
 
         table += "<td><span  onclick='showDetail(" + Factor[index].Productcode + ")' style='color:blue' class='fa fa-info'></span></td>"
@@ -285,7 +303,7 @@ async function showLogBudget(Obj) {
     // Obj_Discount_Detail.Filter =""
     Obj_Discount_Detail.Filter = "(ServerBranch/Id eq " + Obj.ServerBranchId + ")"
     var DiscountVal = await get_Records(Obj_Discount_Detail)
-
+    debugger
     //var DiscountVal = await Get_Detail_DiscountVal();
 
     var types = {};
@@ -446,116 +464,6 @@ function Get_Master_IsDuplicate(SaleDocCode) {
     });
 
 }
-function update_UsersBranch(Record) {
-
-    return new Promise(resolve => {
-        var list = $pnp.sp.web.lists.getByTitle("Discount_UsersBranch");
-        list.items.getById(Record.ID).update({
-            Title: Record.LoginTitle,
-            UserId: Record.LoginName,
-            BranchId: Record.Branch
-        }).then(function (item) {
-
-            resolve(item);
-        });
-    });
-}
-//Create 
-function create_UsersBranch(Record) {
-
-    return new Promise(resolve => {
-        $pnp.sp.web.lists.getByTitle("Discount_UsersBranch").items.add({
-            Title: Record.LoginTitle,
-            UserId: Record.LoginName,
-            BranchId: Record.Branch
-        }).then(function (item) {
-
-            resolve(item);
-        }).catch(error => {
-            console.log(error)
-            resolve(error);
-        })
-    });
-}
-function create_BudgetIncrease(Record) {
-    return new Promise(resolve => {
-        $pnp.sp.web.lists.getByTitle("Discount_BudgetIncrease").items.add({
-            Title: Record.Title,
-            UserIncreaserId: Record.UserIncreaserId,
-            UsersBranchId: Record.UserBranchId,
-            dsc: Record.dsc,
-            BudgetPrice: Record.BudgetPrice,
-            DateCreated: today,
-            IsIncrease: Record.IsIncrease
-        }).then(function (item) {
-            resolve(item);
-        }).catch(error => {
-            console.log(error)
-            resolve(error);
-        })
-    });
-}
-//Discount_Master
-// function create_Master(Record, sum) {
-
-//     return new Promise(resolve => {
-//         $pnp.sp.web.lists.getByTitle("Discount_Master").items.add({
-//             Title: Record.SaleDocCode,
-//             SaleDocCode: Record.SaleDocCode,
-//             OrderDate: Record.OrderDate,
-//             FinalDate: Record.FinalDate,
-//             SaleDOcstate: Record.SaleDOcstate,
-//             CustomerCode: Record.CustomerCode,
-//             sum: sum,
-//             UserId: _spPageContextInfo.userId,
-//             IdUser: _spPageContextInfo.userId,
-//             TitleUser: _spPageContextInfo.userLoginName,
-//             DateCreated: today,
-//             Step: 1,
-//             CID: CurrentCID,
-//             TypeTakhfif: Record.TypeTakhfif
-//         }).then(function (item) {
-//             resolve(item);
-//         }).catch(error => {
-//             console.log(error)
-//             resolve(error);
-//         })
-//     });
-// }
-function create_Detail(Record, MasterId) {
-
-    return new Promise(resolve => {
-        $pnp.sp.web.lists.getByTitle("Discount_Detail").items.add({
-            Title: "Record",
-            MasterIdId: MasterId,
-            Productcode: Record.Productcode,
-            FinalPriceWithoutTax: Record.FinalPriceWithoutTax,
-            FinalPriceWithTax: Record.FinalPriceWithTax,
-            DiscountPrice: Record.DiscountPrice,
-            VDiscount_Price: Record.VDiscount_Price,
-            GDiscount_Price: Record.GDiscount_Price,
-            CDiscount_Price: Record.CDiscount_Price,
-            TaxesPercent: Record.TaxesPercent,
-            VdisPercent: Record.VdisPercent,
-            Gdispercent: Record.Gdispercent,
-            Cdispercent: Record.Cdispercent,
-            UnitPrice: Record.UnitPrice,
-            Famount: Record.Famount,
-            NoInpack: Record.NoInpack,
-            SuppName: Record.SuppName,
-            SuppCode: Record.SuppCode,
-            ProductName: Record.ProductName,
-            SaleDocTypeDesc: Record.SaleDocTypeDesc,
-            FinalBox: Record.FinalBox,
-            DiscountVal: Record.DiscountVal.toString()
-        }).then(function (item) {
-            resolve(item);
-        }).catch(error => {
-            console.log(error)
-            resolve(error);
-        })
-    });
-}
 
 //-------------------------------------Find Factor
 async function FindFactor() {
@@ -634,7 +542,6 @@ async function SaveFactor() {
         _Factor[0].TypeTakhfif = TypeTakhfif
 
 
-        console.log(_sum)
         var obj = {
             Title: _Factor[0].Title,
             SaleDocCode: _Factor[0].SaleDocCode,
@@ -649,9 +556,9 @@ async function SaveFactor() {
             DateCreated: today,
             Step: 1,
             CID: CurrentCID,
-            TypeTakhfif: _Factor[0].TypeTakhfif,
+            TypeTakhfifId: _Factor[0].TypeTakhfif,
             ServerBranchId: _ServerBranch[0].Id,
-
+            TimeCreated: CurrentTime(),
         }
 
 
@@ -663,15 +570,50 @@ async function SaveFactor() {
         var update_Discount_ServerBranch = await update_Record(obj.ServerBranchId, { CurrentBudget: price }, "Discount_ServerBranch")
         /*-----------create Master----------------- */
         var Master = await create_Record(obj, "Discount_Master")
-        // var Master = await create_Master(_Factor[0], _sum)
         var MasterId = Master.data.ID
 
         //----detail
 
         for (let index = 0; index < _Factor.length; index++) {
 
-            var Detail = await create_Detail(_Factor[index], MasterId)
-            statusSave = true
+            var obj = {
+                Title: "Record2",
+                MasterIdId: MasterId,
+                Productcode: _Factor[index].Productcode,
+                FinalPriceWithoutTax: _Factor[index].FinalPriceWithoutTax,
+                FinalPriceWithTax: _Factor[index].FinalPriceWithTax,
+                DiscountPrice: _Factor[index].DiscountPrice,
+                VDiscount_Price: _Factor[index].VDiscount_Price,
+                GDiscount_Price: _Factor[index].GDiscount_Price,
+                CDiscount_Price: _Factor[index].CDiscount_Price,
+                TaxesPercent: _Factor[index].TaxesPercent,
+                VdisPercent: _Factor[index].VdisPercent,
+                Gdispercent: _Factor[index].Gdispercent,
+                Cdispercent: _Factor[index].Cdispercent,
+                UnitPrice: _Factor[index].UnitPrice,
+                Famount: _Factor[index].Famount,
+                NoInpack: _Factor[index].NoInpack,
+                SuppName: _Factor[index].SuppName,
+                SuppCode: _Factor[index].SuppCode,
+                ProductName: _Factor[index].ProductName,
+                SaleDocTypeDesc: _Factor[index].SaleDocTypeDesc,
+                FinalBox: _Factor[index].FinalBox,
+                DiscountVal: _Factor[index].DiscountVal.toString(),
+                DateCreated: todayShamsy8char(),
+                ServerBranchId: _ServerBranch[0].Id,
+                Step: 1,
+
+            }
+
+            var Detail = await create_Record(obj, "Discount_Detail")
+            if (Detail == "error") {
+                statusSave = false
+            }
+            else {
+                statusSave = true
+            }
+
+
         }
 
         if (statusSave == true) {
@@ -698,9 +640,7 @@ function CalulateDarsad(thiss, Famount, UnitPrice) {
     $(thiss).parent().next().append("<span>" + SeparateThreeDigits((val * Famount * UnitPrice) / 100) + "</span>")
     // alert(SeparateThreeDigits((val*Famount*Famount)/100))
 }
-// function tt(thiss){
-//     alert("zz")
-// }
+
 //-------------کاربران ثبت کننده تخفیف    223---------------------- Users in Group
 function IsUserInGroup(id) {
     //  کاربران ثبت کننده تخفیف    223

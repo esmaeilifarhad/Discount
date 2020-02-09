@@ -12,6 +12,25 @@ var _Utility = []
 var Confirmss = []
 var _IDServerBranch = 0
 //----------------------------
+
+
+const Obj_Discount_ConfirmRows = {
+    NameList: "Discount_ConfirmRows",
+    Select: "Id,Title,Row",
+    Filter: "",
+    Expand: "",
+    OrderBy: "Id",
+    Is_Increase: true
+}
+
+const Obj_Discount_Confirm = {
+    NameList: "Discount_Confirm",
+    Select: "Confirmator/Title,Confirmator/Id,ServerBranch/Title,ServerBranch/Id,ConfirmRow/Title,ConfirmRow/Id,ConfirmRow/Row,Id,Title",
+    Filter: "",
+    Expand: "Confirmator,ServerBranch,ConfirmRow",
+    OrderBy: "Moavenat/Title",
+    Is_Increase: true
+}
 const Obj_Discount_ServerBranch = {
     NameList: "Discount_ServerBranch",
     Select: "Moavenat/Title,Moavenat/Id,Id,Title,IP_Server,TitleBranch,DataBaseName,CurrentBudget",
@@ -29,14 +48,6 @@ const Obj_Discount_Moavenat = {
     OrderBy: "CurrentBudget",
     Is_Increase: true
 }
-
-
-
-
-
-
-
-
 
 $(document).ready(function () {
     //-----npm initial header Request
@@ -85,7 +96,7 @@ async function ShowBranch() {
         table += "<tr class='rows'>"
         table += "<td >" + (index + 1) + "</td>"
         table += "<td >" + _ServerBranch[index].Title + "</td>"
-        table += "<td >" + _ServerBranch[index].CurrentBudget + "</td>"
+        table += "<td >" + SeparateThreeDigits(_ServerBranch[index].CurrentBudget) + "</td>"
         table += "<td><input type='button'  onclick='showDetail(" + _ServerBranch[index].ID + ")' style='background-color:#e4b79e' value='نمایش تاییدکنندگان'/></td>"
         table += "</tr>"
     }
@@ -100,10 +111,10 @@ async function ShowMoavenat() {
 
 
 
-  
+
     Obj_Discount_ServerBranch.OrderBy = "CurrentBudget"
     Obj_Discount_ServerBranch.Is_Increase = false
-    Obj_Discount_ServerBranch.Filter=""
+    Obj_Discount_ServerBranch.Filter = ""
     var _ServerBranch = await get_Records(Obj_Discount_ServerBranch)
 
     var table = "<table class='table'>"
@@ -165,14 +176,14 @@ async function ShowMoavenatTakhsisBudget() {
         table += "<tr class='rows' DataId=" + lstMoavenat[index].Id + ">"
         table += "<td >" + (index + 1) + "</td>"
         table += "<td >" + lstMoavenat[index].Title + "</td>"
-        table += "<td >" + lstMoavenat[index].CurrentBudget + "</td>"
-        table += "<td >"+
-        "<input type='button' id='btnSaveMoavenat' "+
-        "onclick='ShowIncreseDecreseMoavenatBudget(" +
-        "{MoavenatTitle:\"" + lstMoavenat[index].Title + "\"," +
-        "MoavenatId:" + lstMoavenat[index].Id + "})'"+
-        "value='افزایش/کاهش'    style='background-color: rgb(22, 184, 103);margin: 1px;' />"+
-        "</td>"
+        table += "<td >" + SeparateThreeDigits(lstMoavenat[index].CurrentBudget) + "</td>"
+        table += "<td >" +
+            "<input type='button' id='btnSaveMoavenat' " +
+            "onclick='ShowIncreseDecreseMoavenatBudget(" +
+            "{MoavenatTitle:\"" + lstMoavenat[index].Title + "\"," +
+            "MoavenatId:" + lstMoavenat[index].Id + "})'" +
+            "value='افزایش/کاهش'    style='background-color: rgb(22, 184, 103);margin: 1px;' />" +
+            "</td>"
         table += "</tr>"
     }
     table += "</table>"
@@ -189,8 +200,7 @@ async function ShowShoabTakhsisBudget() {
 
     /*نمایش بودجه معاونت ها */
     var lstMoavenat = await Get_Moavenat("User/Id eq " + _spPageContextInfo.userId)
-    if(lstMoavenat.length==0)
-    {
+    if (lstMoavenat.length == 0) {
         alert("شعبه ای برای این معاونت تخصیص داده نشده است")
         return
     }
@@ -206,10 +216,10 @@ async function ShowShoabTakhsisBudget() {
     Obj_Discount_ServerBranch.Is_Increase = false
     Obj_Discount_ServerBranch.Filter = filter
     var _ServerBranch = await get_Records(Obj_Discount_ServerBranch)
-    debugger
+    
     var table = "<table class='table'><tr><th>عنوان</th><th>بودجه</th></tr>"
     for (let index = 0; index < lstMoavenat.length; index++) {
-        table += "<tr><td>" + lstMoavenat[index].Title + "</td><td>" + lstMoavenat[index].CurrentBudget + "</td></tr>"
+        table += "<tr><td>" + lstMoavenat[index].Title + "</td><td>" + SeparateThreeDigits(lstMoavenat[index].CurrentBudget) + "</td></tr>"
     }
 
     /*
@@ -231,7 +241,7 @@ async function ShowShoabTakhsisBudget() {
         table += "<tr class='rows' DataId=" + _ServerBranch[index].Id + ">"
         table += "<td >" + (index + 1) + "</td>"
         table += "<td >" + _ServerBranch[index].Title + "</td>"
-        table += "<td >" + _ServerBranch[index].CurrentBudget + "</td>"
+        table += "<td >" + SeparateThreeDigits(_ServerBranch[index].CurrentBudget) + "</td>"
         table += "<td >" + _ServerBranch[index].Moavenat.Title + "</td>"
 
         table += "<td >" +
@@ -253,7 +263,7 @@ async function ShowShoabTakhsisBudget() {
 }
 async function ShowIncreseDecreseMoavenatBudget(obj) {
 
-  
+
     Obj_Discount_Moavenat.ID = obj.MoavenatId
     var Discount_Moavenat = await get_RecordByID(Obj_Discount_Moavenat)
 
@@ -262,8 +272,8 @@ async function ShowIncreseDecreseMoavenatBudget(obj) {
 
     var tagHtml = "<div>" +
         "<table style='margin:0 auto'>" +
-        "<tr><td>مقدار بودجه " + obj.MoavenatTitle + "</td><td>" + Discount_Moavenat.CurrentBudget + "</td></tr>" +
-        "<tr><td>مقدار به تومان</td><td><input type='number' name='Budget'/></td></tr>" +
+        "<tr><td>مقدار بودجه " + obj.MoavenatTitle + "</td><td>" + SeparateThreeDigits(Discount_Moavenat.CurrentBudget) + "</td></tr>" +
+        "<tr><td>مقدار به تومان</td><td><input type='text' name='Budget' onkeyup='changeInputToThreeDigit(this)'/></td></tr>" +
         "<tr><td><input type='button'  onclick='IncreseMoavenatBudget(" + obj.MoavenatId + ")' value='افزایش'    style='background-color: rgb(22, 184, 103);margin: 1px;' /></td>" +
         "<td><input type='button'  onclick='DecreseMoavenatBudget(" + obj.MoavenatId + ")' value='کاهش'    style='background-color: red!important;margin: 1px;' /></td></tr>" +
         "</table></div>"
@@ -280,8 +290,8 @@ async function IncDecShoabtBudget(obj) {
         "<table style='margin:0 auto'>" +
         "<tr><td>مبدا </td><td>" + obj.MoavenatTitle + "</td></tr>" +
         "<tr><td>مقصد </td><td>" + obj.BranchTitle + "</td></tr>" +
-        "<tr><td>مقدار بودجه </td><td>" + Discount_Moavenat.CurrentBudget + "</td></tr>" +
-        "<tr><td>مقدار به تومان</td><td><input type='number' name='Budget'/></td></tr>" +
+        "<tr><td>مقدار بودجه </td><td>" + SeparateThreeDigits(Discount_Moavenat.CurrentBudget) + "</td></tr>" +
+        "<tr><td>مقدار به تومان</td><td><input type='text'  onkeyup='changeInputToThreeDigit(this)'  name='Budget'/></td></tr>" +
         "<tr><td><input type='button'  onclick='IncreseShoabBudget({MoavenatId:" + obj.MoavenatId + ",ServerBranchId:" + obj.ServerBranchId + "})' value='افزایش'    style='background-color: rgb(22, 184, 103);margin: 1px;' /></td>" +
         "<td><input type='button'  onclick='DecreseShoabBudget({MoavenatId:" + obj.MoavenatId + ",ServerBranchId:" + obj.ServerBranchId + "})' value='کاهش'    style='background-color: red!important;margin: 1px;' /></td></tr>" +
         "</table></div>"
@@ -314,18 +324,18 @@ async function save() {
             if (res2 == undefined) {
                 //create
                 var obj = { Title: peopleTitle, ServerBranchId: _IDServerBranch, ConfirmRowId: parseInt(DataId), ConfirmatorId: parseInt(peopleId) }
-                
+
                 var createDiscount_Confirm = await create_Record(obj, "Discount_Confirm")
-                
+
             }
             else {
 
                 //update
                 // var res = await update_Confirm({ ID: res2.Id, Title: peopleTitle, ServerBranchId: _IDServerBranch, ConfirmRowId: parseInt(DataId), ConfirmatorId: parseInt(peopleId) })
-                
+
                 var obj = { Title: peopleTitle, ServerBranchId: _IDServerBranch, ConfirmRowId: parseInt(DataId), ConfirmatorId: parseInt(peopleId) }
                 var updateDiscount_Confirm = await update_Record(res2.Id, obj, "Discount_Confirm")
-                
+
             }
         }
     })
@@ -367,17 +377,19 @@ async function saveTakhsisMoavenat() {
 }
 /*افزایش و کاهش بودجه معاونت */
 async function IncreseMoavenatBudget(ID) {
-    debugger
+    
     $('#btnSave').prop('disabled', true);
     $.LoadingOverlay("show");
 
-    var Budget = parseInt($("#takhsisBudget input[name=Budget]").val());
+    var Budget = $("#takhsisBudget input[name=Budget]").val();
+    Budget=parseInt(removeComma(Budget))
+    
     var obj = { IsIncrease: true, BudgetPrice: Budget, Title: "معاونت", MoavenatId: ID, DateCreated: today, TimeCreated: CurrentTime(), UserIncreaserId: _spPageContextInfo.userId }
     var createDiscount_BudgetIncrease = await create_Record(obj, "Discount_BudgetIncrease")
 
 
 
-  
+
     Obj_Discount_Moavenat.ID = ID
     var get_Discount_Moavenat = await get_RecordByID(Obj_Discount_Moavenat)
 
@@ -397,6 +409,7 @@ async function DecreseMoavenatBudget(ID) {
     $('#btnSave').prop('disabled', true);
     $.LoadingOverlay("show");
     var Budget = parseInt($("#takhsisBudget input[name=Budget]").val());
+    Budget=parseInt(removeComma(Budget))
 
     var obj = { IsIncrease: false, BudgetPrice: Budget, Title: "معاونت", MoavenatId: ID, DateCreated: today, TimeCreated: CurrentTime(), UserIncreaserId: _spPageContextInfo.userId }
     var createDiscount_BudgetIncrease = await create_Record(obj, "Discount_BudgetIncrease")
@@ -422,7 +435,8 @@ async function IncreseShoabBudget(obj) {
     // $('#btnSave').prop('disabled', true);
     $.LoadingOverlay("show");
 
-    var Budget = parseInt($("#takhsisBudget input[name=Budget]").val());
+    var Budget = $("#takhsisBudget input[name=Budget]").val();
+    Budget=parseInt(removeComma(Budget))
 
     var obj1 = {
         IsIncrease: false, BudgetPrice: Budget, Title: "شعبه", MoavenatId: obj.MoavenatId,
@@ -462,8 +476,8 @@ async function DecreseShoabBudget(obj) {
     // $('#btnSave').prop('disabled', true);
     $.LoadingOverlay("show");
 
-    var Budget = parseInt($("#takhsisBudget input[name=Budget]").val());
-
+    var Budget = $("#takhsisBudget input[name=Budget]").val();
+  Budget=parseInt(removeComma(Budget))
 
     var obj1 = {
         IsIncrease: true, BudgetPrice: Budget, Title: "شعبه", MoavenatId: obj.MoavenatId,
@@ -516,6 +530,11 @@ async function CalculateBudget(filter) {
         resolve(Price)
     })
 }
+// function changeInputToThreeDigit(thiss) {
+//     var x=removeComma(thiss.value)
+//     x = SeparateThreeDigits(x)
+//     thiss.value=(x=='NaN'?0:x)
+// }
 //--------------------------------------------------------------Modal
 async function showDetail(ID_IServerBranch) {
     _IDServerBranch = ID_IServerBranch
@@ -524,13 +543,23 @@ async function showDetail(ID_IServerBranch) {
 */
     var users = await GetUsersInGroup(portalAddress, 255)
     Confirmss = []
-    Confirmss = await Get_Confirm("(ServerBranch/Id eq " + _IDServerBranch + ")")
+    // Confirmss = await Get_Confirm("(ServerBranch/Id eq " + _IDServerBranch + ")")
+
+    Obj_Discount_Confirm.OrderBy = "Id"
+    Obj_Discount_Confirm.Is_Increase = false
+    Obj_Discount_Confirm.Filter = "(ServerBranch/Id eq " + _IDServerBranch + ")"
+    var Confirmss = await get_Records(Obj_Discount_Confirm)
+
+    Obj_Discount_ConfirmRows.OrderBy = "Row"
+    Obj_Discount_ConfirmRows.Is_Increase = true
+    Obj_Discount_ConfirmRows.Filter = ""
+    var ConfirmRowss = await get_Records(Obj_Discount_ConfirmRows)
 
 
 
 
 
-    var ConfirmRowss = await Get_Discount_ConfirmRows()
+    // var ConfirmRowss = await Get_Discount_ConfirmRows()
 
     var table = "<table class='table'>"
     table += "<tr>" +
@@ -543,7 +572,15 @@ async function showDetail(ID_IServerBranch) {
         table += "<td >" + (index + 1) + "</td>"
         table += "<td >" + ConfirmRowss[index].Title + "</td>"
         table += "<td>"
-        var res = "<select class='chosen'><option></option>"
+        debugger
+        if( ConfirmRowss[index].Row==3 ||ConfirmRowss[index].Row==2||ConfirmRowss[index].Row==6)
+        {
+        var res = "<select disabled  class='chosen'><option></option>"
+        }
+        else
+        {
+            var res = "<select  class='chosen'><option></option>" 
+        }
         for (let index2 = 0; index2 < users.length; index2++) {
             var res2 = Confirmss.find(x =>
                 x.Confirmator.Id ==
@@ -552,8 +589,9 @@ async function showDetail(ID_IServerBranch) {
                 x.ConfirmRow.Id ==
                 ConfirmRowss[index].Id
             );
+            debugger
             if (res2 == undefined) {
-                res += "<option value='" + users[index2].Id + "'>" + splitString(users[index2].Title, "(")[0] + "</option>"
+                res += "<option  value='" + users[index2].Id + "'>" + splitString(users[index2].Title, "(")[0] + "</option>"
             }
             else {
                 res += "<option selected value='" + users[index2].Id + "'>" + splitString(users[index2].Title, "(")[0] + "</option>"
@@ -750,10 +788,6 @@ function update_Moavenat(Record) {
         });
     });
 }
-
-
-
-
 
 
 //-------------------------------------
