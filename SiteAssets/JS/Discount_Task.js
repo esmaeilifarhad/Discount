@@ -1,4 +1,3 @@
-
 var CurrentCID = 0;
 var CurrentPID = 0;
 var CurrentName = ""
@@ -11,13 +10,13 @@ var _CurrentBudget;
 
 var portalAddress = _spPageContextInfo.webAbsoluteUrl;
 //-----------------------------------
-var Obj_Discount_Log={
+var Obj_Discount_Log = {
     NameList: "Discount_Log",
-    Select: "MasterId/Title,MasterId/Id,ConfirmId/Title,ConfirmId/Id,ConfirmId/Moshakhasat,Id,Title,Result,Dsc,DateConfirm",
+    Select: "MasterId/Title,MasterId/Id,ConfirmId/Title,ConfirmId/Id,ConfirmId/Moshakhasat,Id,Title,Result,Dsc,DateConfirm,TimeConfirm",
     Filter: "",
     Expand: "MasterId,ConfirmId",
     OrderBy: "Id",
-    Is_Increase: true 
+    Is_Increase: true
 }
 const Obj_Discount_ServerBranch = {
     NameList: "Discount_ServerBranch",
@@ -76,9 +75,6 @@ const Obj_Discount_Detail = {
     Is_Increase: true
 }
 
-
-
-
 $(document).ready(function () {
     //-----npm initial header Request
     $pnp.setup({
@@ -111,24 +107,29 @@ async function ShowTaskCartabl() {
     Obj_Discount_Confirm.Filter = "(Confirmator/Id eq " + _spPageContextInfo.userId + ")"
     var Discount_Confirm = await get_Records(Obj_Discount_Confirm)
 
+
+
+
+    // var results = await Promise.all([
+    //     get_Records(Obj_Discount_Confirm),
+    //     get_Records(Obj_Discount_Master)
+    // ]);
+    // var Discount_Confirm = results[0]
+    // var Discount_Master = results[1]
+
+
     var ServerBranchFilter = "";
     for (let index = 0; index < Discount_Confirm.length; index++) {
         ServerBranchFilter += "(ServerBranch/Id eq " + Discount_Confirm[index].ServerBranch.Id + ") and (Step eq " + Discount_Confirm[index].ConfirmRow.Row + ") or"
     }
     ServerBranchFilter = removeCountChar(ServerBranchFilter, 3)
 
-    // console.log(ServerBranchFilter)
-
     Obj_Discount_Master.OrderBy = "Id"
     Obj_Discount_Master.Is_Increase = false
     Obj_Discount_Master.Filter = ServerBranchFilter
     var Discount_Master = await get_Records(Obj_Discount_Master)
 
-
-
-
-    // var Master = await Get_Master_Cartabl(_usersInConfirm);
-
+    //--------------------------------
     var table = "<table class='table'>"
     table += "<tr><th>ردیف</th><th>SaleDocCode</th><th>OrderDate</th>" +
         "<th>sum</th><th>TitleUser</th>" +
@@ -138,9 +139,6 @@ async function ShowTaskCartabl() {
         "<th>نمایش فاکتور</th>" +
         "</tr>"
     for (let index = 0; index < Discount_Master.length; index++) {
-
-        // var res = _usersInConfirm.find(x =>
-        //     x.Step == Master[index].Step);
 
         table += "<tr><td>" + (index + 1) + "</td>" +
             "<td>" + Discount_Master[index].SaleDocCode + "</td>" +
@@ -169,9 +167,7 @@ async function ShowTaskCartabl() {
 
     $("#ShowCartabl").append(table)
 }
-
 //--------------------------------------------------------------Modal
-
 function ShowMessage(arrayMessage) {
 
     var table = "<table class='table table-bordered'>"
@@ -192,169 +188,65 @@ async function ShowFactorDetail(obj) {
     Obj_Discount_BaseData.OrderBy = "Id"
     Obj_Discount_BaseData.Is_Increase = true
     Obj_Discount_BaseData.Filter = "(Code eq " + 1 + ")"
-    var Discount_BaseData = await get_Records(Obj_Discount_BaseData)
+    // var Discount_BaseData = await get_Records(Obj_Discount_BaseData)
 
 
     Obj_Discount_Detail.OrderBy = "Id"
     Obj_Discount_Detail.Is_Increase = false
     Obj_Discount_Detail.Filter = "(MasterId/Id eq " + obj.MasterId + ")"
-    var Detail_Factor = await get_Records(Obj_Discount_Detail)
+    // var Detail_Factor = await get_Records(Obj_Discount_Detail)
 
     Obj_Discount_Master.OrderBy = "Id"
     Obj_Discount_Master.Is_Increase = false
     Obj_Discount_Master.ID = obj.MasterId
-    var Discount_Master = await get_RecordByID(Obj_Discount_Master)
+    // var Discount_Master = await get_RecordByID(Obj_Discount_Master)
 
     Obj_Discount_ServerBranch.OrderBy = "CurrentBudget"
     Obj_Discount_ServerBranch.Is_Increase = false
     Obj_Discount_ServerBranch.ID = obj.ServerBranchId
-    var Discount_ServerBranch = await get_RecordByID(Obj_Discount_ServerBranch)
-
-
-
-    var SumTotal = 0
-    for (let index = 0; index < Detail_Factor.length; index++) {
-        SumTotal += parseInt(Detail_Factor[index].DiscountVal);
-    }
-    //بودجه جاری شعبه
-    var Headerbranch = "<table class='table'>" +
-        "<tr><td>شعبه : " + Discount_ServerBranch.Title + "</td><td>بودجه شعبه : " + SeparateThreeDigits(Discount_ServerBranch.CurrentBudget) + "</td></tr></table>"
-    $("#branch1 table").remove()
-    $("#branch1").append(Headerbranch)
-    //Header Factor
-    var HeaderFactor = "<table class='table'>"
-    HeaderFactor += "<tr><td>کد فاکتور : " + Discount_Master.SaleDocCode + "</td><td>کد مشتری : " + Discount_Master.CustomerCode + "</td><td>تاریخ  : " + foramtDate(Discount_Master.OrderDate) + "</td></tr>"
-    HeaderFactor += "<tr><td style='color:red'>مجموع مبلغ تخفیف : " + SeparateThreeDigits(SumTotal/*Detail_Factor[0].MasterId.sum*/) + "</td>" +
-        "<td>مرحله : " + Discount_Master.Step + "</td>" +
-        "<td>ثبت کننده  : " + Discount_Master.TitleUser + "</td>"
-    HeaderFactor += "<td>نوع درخواست : <select id='DarTaahod'>"
-    for (let index = 0; index < Discount_BaseData.length; index++) {
-
-        if (Discount_BaseData[index].Id == Discount_Master.TypeTakhfif.Id) {
-            HeaderFactor += "<option  value=" + Discount_BaseData[index].Id + " selected>" + Discount_BaseData[index].Title + "</option>"
-        }
-        else {
-            HeaderFactor += "<option value=" + Discount_BaseData[index].Id + ">" + Discount_BaseData[index].Title + "</option>"
-        }
-
-    }
-    HeaderFactor += "</select></td>"
-    "</tr>"
-    HeaderFactor += "</table>"
-    $("#head1 table").remove()
-    $("#head1").append(HeaderFactor)
-
-    //Detail Factor
-    /* در صورتی که درکارتابل بود این قسمت نمایش داده میشود و لی اگر صفر بود منظور خود درخواست دهنده است که باید ویرایش نماید */
-    if (Detail_Factor[0].MasterId.Step > 0) {
-        var DetailFactor = "<table class='table'>"
-        DetailFactor += "<tr><th>کد فاکتور</th><th>نام کالا</th><th>نام تامین کننده کالا </th><th>تعداد در کاتن</th>" +
-            "<th>تعداد</th><th>فی کالا</th><th>مبلغ تخفیف پلکانی</th><th>مبلغ تخفیف ویژه</th>" +
-            "<th>مبلغ کل تخفیفات</th><th>مبلغ نهایی بدون مالیات و عوارض</th><th>مبلغ نهایی با مالیات و عوارض</th>" +
-            "<th>درصد تخفیف</th><th>درصد تخفیف</th><th>مبلغ تخفیف</th></tr>"
-        for (let index = 0; index < Detail_Factor.length; index++) {
-            debugger
-            DetailFactor += "<tr>" +
-                "<td> " + Detail_Factor[index].Id + "</td>" +
-                "<td> " + Detail_Factor[index].ProductName + "</td>" +
-                "<td> " + Detail_Factor[index].SuppName + "</td>" +
-                "<td>" + Detail_Factor[index].NoInpack + "</td>" +
-                "<td>" + Detail_Factor[index].Famount + "</td>" +
-                "<td>" + SeparateThreeDigits(Detail_Factor[index].UnitPrice) + "</td>" +
-                "<td>" + Detail_Factor[index].GDiscount_Price + "</td>" +
-                "<td>" + Detail_Factor[index].VDiscount_Price + "</td>" +
-                "<td>" + SeparateThreeDigits(Detail_Factor[index].DiscountPrice) + "</td>" +
-                "<td>" + SeparateThreeDigits(Detail_Factor[index].FinalPriceWithTax) + "</td>" +
-                "<td>" + SeparateThreeDigits(Detail_Factor[index].FinalPriceWithoutTax) + "</td>" +
-                "<td style='color:red'> " + Detail_Factor[index].DiscountVal +
-                "<td style='color:black'><input value=" + Detail_Factor[index].DiscountVal + " type='number' class='discountVal'  onchange='CalulateDarsad(this," + Detail_Factor[index].Famount + "," + Detail_Factor[index].UnitPrice + ")'/></td>" +
-                "<td><span>" + SeparateThreeDigits((parseFloat(Detail_Factor[index].DiscountVal) * parseFloat(Detail_Factor[index].Famount) * parseFloat(Detail_Factor[index].UnitPrice)) / 100) + "</span></td>" +
-                "</tr>"
-        }
-        DetailFactor += "</table>"
-    }
-    else {
-        var DetailFactor = "<table class='table'>"
-        DetailFactor += "<tr><th>کد فاکتور</th><th>نام کالا</th><th>نام تامین کننده کالا </th><th>تعداد در کاتن</th><th>تعداد</th><th>فی کالا</th><th>مبلغ تخفیف پلکانی</th><th>مبلغ تخفیف ویژه</th><th>مبلغ کل تخفیفات</th><th>مبلغ نهایی بدون مالیات و عوارض</th><th>مبلغ نهایی با مالیات و عوارض</th><th>مبلغ تخفیف</th></tr>"
-        for (let index = 0; index < Detail_Factor.length; index++) {
-            DetailFactor += "<tr class='rows' DataId=" + Detail_Factor[index].Id + ">" +
-                "<td> " + Detail_Factor[index].Id + "</td>" +
-                "<td> " + Detail_Factor[index].ProductName + "</td>" +
-                "<td> " + Detail_Factor[index].SuppName + "</td>" +
-                "<td>" + Detail_Factor[index].NoInpack + "</td>" +
-                "<td>" + Detail_Factor[index].Famount + "</td>" +
-                "<td>" + SeparateThreeDigits(Detail_Factor[index].UnitPrice) + "</td>" +
-                "<td>" + Detail_Factor[index].GDiscount_Price + "</td>" +
-                "<td>" + Detail_Factor[index].VDiscount_Price + "</td>" +
-                "<td>" + SeparateThreeDigits(Detail_Factor[index].DiscountPrice) + "</td>" +
-                "<td>" + SeparateThreeDigits(Detail_Factor[index].FinalPriceWithTax) + "</td>" +
-                "<td>" + SeparateThreeDigits(Detail_Factor[index].FinalPriceWithoutTax) + "</td>" +
-                "<td style='color:red'><input type='number' class='discountVal' value='" + Detail_Factor[index].DiscountVal + "'/></td>" +
-                "</tr>"
-        }
-        DetailFactor += "</table>"
-    }
-    $("#Detail1 table").remove()
-    $("#Detail1").append(DetailFactor)
-
-    //decision
-    /* در صورتی که درکارتابل بود این قسمت نمایش داده میشود و لی اگر صفر بود منظور خود درخواست دهنده است که باید ویرایش نماید */
-    if (Detail_Factor[0].MasterId.Step > 0) {
-        var DecisionDiv = "<table class='table'>"
-        DecisionDiv += "<tr>" +
-            "<td>توضیحات</td>" +
-            "<td><textarea  rows=4 cols=100  name='comment' form='usrform'    placeholder='توضیحات ...'></textarea></td>" +
-            "</tr>" +
-            "<tr>" +
-            "<td>نتیجه</td>" +
-            "<td><input type='radio' name='decide' value='true'> تایید<input type='radio' name='decide' value='false'> رد<br></td></tr>" +
-            "<tr><td colspan=2><button class='btnSave'    style='background-color:rgb(167, 16, 23)!important; border-radius: 17px;'   onclick='save(" + obj.MasterId + ")' " +
-            "type='button' class='btn btn-success'>ذخیره</button></td>"
-        "</tr>"
-        DecisionDiv += "</table>"
-    }
-    else {
-        var DecisionDiv = "<table class='table'>"
-        DecisionDiv += "<tr>" +
-            "<td>توضیحات</td>" +
-            "<td><textarea  rows=4 cols=100  name='comment' form='usrform'    placeholder='توضیحات ...'></textarea></td>" +
-            "</tr>" +
-            "<tr><td colspan=2><button class='btnSave'    style='background-color:rgb(167, 16, 23)!important; border-radius: 17px;'   onclick='saveEdit(" + obj.MasterId + ")' " +
-            "type='button' class='btn btn-success'>ویرایش</button></td>"
-        "</tr>"
-        DecisionDiv += "</table>"
-    }
-    $("#Decision1 table").remove()
-    $("#Decision1").append(DecisionDiv)
-
+    // var Discount_ServerBranch = await get_RecordByID(Obj_Discount_ServerBranch)
 
     Obj_Discount_Log.OrderBy = "Id"
     Obj_Discount_Log.Is_Increase = false
     Obj_Discount_Log.Filter = "(MasterId/Id eq " + obj.MasterId + ")"
-    var Log = await get_Records(Obj_Discount_Log)
+    // var Log = await get_Records(Obj_Discount_Log)
+
+    debugger
+    Obj_Discount_Confirm.OrderBy = "Id"
+    Obj_Discount_Confirm.Is_Increase = false
+    Obj_Discount_Confirm.Filter = "(Confirmator/Id eq " + _spPageContextInfo.userId + ") and" +
+        " (ServerBranch/Id eq " + obj.ServerBranchId + ") and " +
+        "(ConfirmRow/Row eq " + obj.Step + ")"
+    // var Discount_Confirm = await get_Records(Obj_Discount_Confirm)
 
 
-    var LogForm = "<table class='table'>"
-    LogForm += "<tr>" +
-        "<th>سمت</th>" +
-        "<th>مشخصات</th>" +
-        "<th>نتیجه</th>" +
-        "<th>توضیحات</th>" +
-        "<th>تاریخ</th>" +
-        "</tr>"
-    for (let index = 0; index < Log.length; index++) {
-        LogForm += "<tr>" +
-            "<td>" + Log[index].ConfirmId.Title + "</td>" +
-            "<td>" + Log[index].ConfirmId.Moshakhasat + "</td>" +
-            "<td>" + Log[index].Result + "</td>" +
-            "<td>" + Log[index].Dsc + "</td>" +
-            "<td>" + Log[index].DateConfirm + "</td>" +
-            "</tr>"
-    }
-    LogForm += "</table>"
-    $("#Log1 table").remove()
-    $("#Log1").append(LogForm)
+    var results = await Promise.all([
+        get_Records(Obj_Discount_BaseData),
+        get_Records(Obj_Discount_Detail),
+        get_RecordByID(Obj_Discount_Master),
+        get_RecordByID(Obj_Discount_ServerBranch),
+        get_Records(Obj_Discount_Log),
+        get_Records(Obj_Discount_Confirm)
+    ]);
+    var Discount_BaseData = results[0]
+    var Detail_Factor = results[1]
+    var Discount_Master = results[2]
+    var Discount_ServerBranch = results[3]
+    var Log = results[4]
+    var Discount_Confirm = results[5]
+    debugger
 
+
+
+    ShowHeaderbranch(Discount_ServerBranch, Discount_Confirm)
+
+    ShowHeaderFactor(Discount_Master, Discount_BaseData, Detail_Factor)
+
+    ShowDetailFactor(Detail_Factor)
+
+    ShowDecision(obj, Detail_Factor, Discount_Confirm)
+
+    ShowLog(Log)
 
     OpenDialog();
 
@@ -377,18 +269,52 @@ function OpenDialog() {
         }
     }).data("kendoWindow").center().open();
 }
-async function save(id, ConfirmatorId) {
-
+async function save(obj) {
+    debugger
     $('.btnSave').prop('disabled', true);
     $.LoadingOverlay("show");
     var arrayMessage = []
-
-    var obj_Record = {}
-    obj_Record.ID = id
+    var arrayDetails = []
     var description = $("#Decision1 textarea").val()
     var result = $("input[name='decide']:checked").val()
-    obj_Record.description = description
-    obj_Record.result = result
+    var TypeTakhfif = $("#DarTaahod option:selected").val();
+
+
+    Obj_Discount_ServerBranch.OrderBy = "CurrentBudget"
+    Obj_Discount_ServerBranch.Is_Increase = false
+    Obj_Discount_ServerBranch.ID = obj.ServerBranchId
+    // var Discount_ServerBranch = await get_RecordByID(Obj_Discount_ServerBranch)
+    //------------------------------
+    Obj_Discount_Master.OrderBy = "Id"
+    Obj_Discount_Master.Is_Increase = false
+    Obj_Discount_Master.ID = obj.MasterId
+    // var Obj_Discount_Master = await get_RecordByID(Obj_Discount_Master)
+    //------------------------------
+    var results = await Promise.all([
+        get_RecordByID(Obj_Discount_ServerBranch),
+        get_RecordByID(Obj_Discount_Master)
+    ]);
+
+
+    var CurrentBudget = results[0].CurrentBudget
+    var OldSum = results[1].sum
+    debugger
+    //------محاسبه جمع تخفیف ها
+    var NewSum = 0
+    $("#Detail1 table  .rows").each(function () {
+        var DataId = parseInt($(this).attr("DataId"))
+        if ($(this).find(".discountVal").val() != "") {
+            var discountVal = parseFloat($(this).find(".discountVal").val())
+            var Famount = parseFloat(removeComma($(this).find(".Famount").text()))
+            var UnitPrice = parseFloat(removeComma($(this).find(".UnitPrice").text()))
+            var priceCal = (discountVal * Famount * UnitPrice) / 100
+            NewSum += Math.round(priceCal)
+            arrayDetails.push({ ID: DataId, discountVal: discountVal })
+        }
+        else {
+            arrayDetails.push({ ID: DataId, discountVal: discountVal })
+        }
+    })
 
     if (result == undefined) {
         arrayMessage.push({ message: "لطفا نتیجه را مشخص نمایید" })
@@ -398,11 +324,71 @@ async function save(id, ConfirmatorId) {
         arrayMessage.push({ message: "لطفا در صورت عدم تایید توضیحات را پر نمایید." })
 
     }
+
+
     if (arrayMessage.length > 0) {
         ShowMessage(arrayMessage)
     }
-    else {
 
+
+    else {
+        if (CurrentBudget < NewSum) {
+            $.LoadingOverlay("hide");
+            var res = await customConfirm({ sum: NewSum, CurrentBudget: CurrentBudget })
+            if (res.value == true) {
+                $.LoadingOverlay("show");
+            }
+            else {
+                $.LoadingOverlay("hide");
+                $('.btnSave').prop('disabled', false);
+                return;
+            }
+        }
+
+        //-------------------------------Update_Discount_ServerBranch
+        // var update_Discount_ServerBranch = await update_Record(obj.ServerBranchId, { CurrentBudget: (CurrentBudget - NewSum) }, "Discount_ServerBranch")
+        //-------------------------TypeTakhfif
+        // var update_Discount_Master = await update_Record(obj.MasterId, { sum:  NewSum,TypeTakhfif:TypeTakhfif }, "Discount_Master")
+        //-------------------------------Update_Discount_Detail
+        debugger
+        var CreatePromise = []
+        for (let index = 0; index < arrayDetails.length; index++) {
+            CreatePromise.push(
+                update_Record(arrayDetails[index].ID,
+                    {
+                        DiscountVal: arrayDetails[index].discountVal.toString(),
+                        Step: 2
+                    },
+                    "Discount_Detail"))
+        }
+        CreatePromise.push(
+            update_Record(obj.ServerBranchId,
+                { CurrentBudget: (OldSum < NewSum ? (CurrentBudget - (NewSum - OldSum)) : (CurrentBudget + (OldSum - NewSum))) },
+                "Discount_ServerBranch"
+            ))
+        CreatePromise.push(
+            update_Record(obj.MasterId,
+                {
+                    sum: NewSum, TypeTakhfifId: parseInt(TypeTakhfif),
+                    Step: 2
+                },
+                "Discount_Master"
+            ))
+        CreatePromise.push(create_Record({
+            Title: "Record",
+            MasterIdId: obj.MasterId,
+            Result: (result == "true" ? "تایید" : "عدم تایید"),
+            Dsc: description,
+            DateConfirm: todayShamsy8char(),
+            TimeConfirm: CurrentTime(),
+            ConfirmIdId: obj.ConfirmId,
+
+        }, "Discount_Log"))
+        var results = await Promise.all(CreatePromise);
+        //-------------------------------
+        $.LoadingOverlay("hide");
+
+        return
         if (result == "true") {
             obj_Record.Step = 1
         }
@@ -410,8 +396,20 @@ async function save(id, ConfirmatorId) {
             obj_Record.Step = -1
         }
         arrayMessage = []
+
+        // update_Record(ID, Obj, NameList)
         var Master = await update_Master(obj_Record)
-        var Log = await create_Log(obj_Record, ConfirmatorId)
+
+        // var Log = await create_Log(obj_Record, ConfirmatorId)
+
+        obj_Record.Result = (Record.result == "true" ? "تایید" : "عدم تایید")
+        var x = new Date()
+        var x1 = x.getHours() + ":" + x.getMinutes() + ":" + x.getSeconds();
+        obj_Record.DateConfirm = foramtDate(today) + "  -  " + x1
+        obj_Record.ConfirmIdId = ConfirmatorId
+        obj_Record.Title = "Record"
+
+        var Log = await create_Record(obj_Record, "Discount_Log")
         showAlert()
         $("#window").data("kendoWindow").close();
         ShowTaskCartabl();
@@ -422,12 +420,16 @@ async function save(id, ConfirmatorId) {
 
 
 }
+/*
+درخواست دهنده فرم خود را ویرایش میکند
+وقتی بر روی دکمه ذخیره کلیک میکند 
+*/
 async function saveEdit(MasterId) {
 
     $('#btnSave').prop('disabled', true);
     $.LoadingOverlay("show");
     var arrayMessage = []
-    var _sum = 0
+    var NewSum = 0
 
     $("#Detail1 table .rows").each(function () {
 
@@ -437,7 +439,7 @@ async function saveEdit(MasterId) {
 
         if ($(this).find(".discountVal").val() != "") {
             newObj.DiscountVal = parseInt($(this).find(".discountVal").val())
-            _sum += parseInt($(this).find(".discountVal").val())
+            NewSum += parseInt($(this).find(".discountVal").val())
         }
         else {
             newObj.DiscountVal = 0
@@ -448,12 +450,12 @@ async function saveEdit(MasterId) {
     })
 
 
-    if (_sum == 0) {
+    if (NewSum == 0) {
 
         arrayMessage.push({ message: "هیچ تخفیفی در نظر گرفته نشده است" })
     }
     _CurrentBudget = await getCurrentBudget()
-    if (_sum > _CurrentBudget) {
+    if (NewSum > _CurrentBudget) {
         arrayMessage.push({ message: "بودجه شما کافی نمیباشد" + " بودجه شما   " + SeparateThreeDigits(_CurrentBudget) + " میباشد. " })
     }
     if (arrayMessage.length > 0) {
@@ -489,32 +491,7 @@ async function saveEdit(MasterId) {
     $('#btnSave').prop('disabled', true);
     $.LoadingOverlay("hide");
 }
-//محاسبه بودجه فعلی
-async function getCurrentBudget() {
 
-    var BudgetIncrease = await Get_BudgetIncrease();
-    var DiscountVal = await Get_Detail_DiscountVal();
-
-    var _sum = 0
-
-    for (let index = 0; index < BudgetIncrease.length; index++) {
-
-        if (BudgetIncrease[index].IsIncrease == true) {
-            _sum += BudgetIncrease[index].BudgetPrice
-        }
-        else {
-            _sum -= BudgetIncrease[index].BudgetPrice
-        }
-    }
-    for (let index = 0; index < DiscountVal.length; index++) {
-
-        _sum -= DiscountVal[index].DiscountVal
-
-    }
-    return _sum
-
-
-}
 function showAlert() {
     const Toast = Swal.mixin({
         toast: true,
@@ -543,85 +520,191 @@ function CalulateDarsad(thiss, Famount, UnitPrice) {
     // alert(SeparateThreeDigits((val*Famount*Famount)/100))
 }
 
-//--------------------------------------------------------------------CRUD
-//get
-
-
-function Get_BudgetIncrease() {
-
-    return new Promise(resolve => {
-        $pnp.sp.web.lists.
-            getByTitle("Discount_BudgetIncrease").
-            items.
-            select("UsersBranch/Title,UsersBranch/Id,UsersBranch/IdUser,UserIncreaser/Title,UserIncreaser/Id,Id,Title,BudgetPrice,IsIncrease,DateCreated").
-            filter("(UsersBranch/IdUser eq " + _spPageContextInfo.userId + ")").
-            expand("UsersBranch,UserIncreaser").
-            get().
-            then(function (items) {
-
-                resolve(items);
-            });
-    });
+//--------------------------------------نمایش بخش های مختلف فاکتور
+/*نمایش هدر بودجه جاری و مشخصات شعبه */
+function ShowHeaderbranch(Discount_ServerBranch, Discount_Confirm) {
+    var Headerbranch = "<table class='table'>" +
+        "<tr><td>شعبه : " + Discount_ServerBranch.Title + "</td>" +
+        "<td>بودجه شعبه : " + SeparateThreeDigits(Discount_ServerBranch.CurrentBudget) + "</td>" +
+        "<td>نقش : " + Discount_Confirm[0].ConfirmRow.Title + "</td>" +
+        "<td>مرحله : " + Discount_Confirm[0].ConfirmRow.Row + "</td>" +
+        "</tr></table>"
+    $("#branch1 table").remove()
+    $("#branch1").append(Headerbranch)
 }
-function Get_Detail_DiscountVal() {
-
-    return new Promise(resolve => {
-        $pnp.sp.web.lists.
-            getByTitle("Discount_Detail").
-            items.
-            select("MasterId/IdUser,MasterId/SaleDocCode,MasterId/Id,MasterId/Title,Id,Title,DiscountVal,MasterId/DateCreated").
-            filter("(MasterId/IdUser eq " + _spPageContextInfo.userId + ")").
-            expand("MasterId").
-            get().
-            then(function (items) {
-
-                resolve(items);
-            }).catch(error => {
-                console.log(error)
-                resolve(error);
-            });
-    });
-}
-function Get_Detail_Cartabl() {
-
-    return new Promise(resolve => {
-        $pnp.sp.web.lists.
-            getByTitle("Discount_Detail").
-            items.
-            select("MasterId/IdUser,MasterId/SaleDocCode,MasterId/Id,MasterId/Title,Id,Title,DiscountVal,MasterId/DateCreated,MasterId/TitleUser").
-            // filter("(MasterId/IdUser eq " + _spPageContextInfo.userId + ")").
-            expand("MasterId").
-            get().
-            then(function (items) {
-
-                resolve(items);
-            }).catch(error => {
-                console.log(error)
-                resolve(error);
-            });
-    });
-}
-function Get_Master_Cartabl(usersInConfirm) {
-    var filter = ""
-    for (let index = 0; index < usersInConfirm.length; index++) {
-        filter += "(Step eq " + usersInConfirm[index].Step + ") or ";
+/*نمایش هدر فاکتور */
+function ShowHeaderFactor(Discount_Master, Discount_BaseData, Detail_Factor) {
+    var SumTotal = 0
+    for (let index = 0; index < Detail_Factor.length; index++) {
+        SumTotal += parseInt(Detail_Factor[index].DiscountVal);
     }
-    filter = removeCountChar(filter, 3)
-    return new Promise(resolve => {
-        $pnp.sp.web.lists.
-            getByTitle("Discount_Master").
-            items.
-            // select("User/Title,User/Id,Branch/Title,Branch/Id,Id,Title").
-            filter("(Step eq 0) or " + filter).
-            //expand("User,Branch").
-            get().
-            then(function (items) {
 
-                resolve(items);
-            });
-    });
+    var HeaderFactor = "<table class='table'>"
+    HeaderFactor += "<tr><td>کد فاکتور : " + Discount_Master.SaleDocCode + "</td><td>کد مشتری : " + Discount_Master.CustomerCode + "</td><td>تاریخ  : " + foramtDate(Discount_Master.OrderDate) + "</td></tr>"
+    HeaderFactor += "<tr><td style='color:red'>مجموع مبلغ تخفیف : " + SeparateThreeDigits(SumTotal/*Detail_Factor[0].MasterId.sum*/) + "</td>" +
+        "<td>مرحله : " + Discount_Master.Step + "</td>" +
+        "<td>ثبت کننده  : " + Discount_Master.TitleUser + "</td>"
+    HeaderFactor += "<td>نوع درخواست : <select id='DarTaahod'>"
+    for (let index = 0; index < Discount_BaseData.length; index++) {
 
+        if (Discount_BaseData[index].Id == Discount_Master.TypeTakhfif.Id) {
+            HeaderFactor += "<option  value=" + Discount_BaseData[index].Id + " selected>" + Discount_BaseData[index].Title + "</option>"
+        }
+        else {
+            HeaderFactor += "<option value=" + Discount_BaseData[index].Id + ">" + Discount_BaseData[index].Title + "</option>"
+        }
+
+    }
+    HeaderFactor += "</select></td>"
+    "</tr>"
+    HeaderFactor += "</table>"
+    $("#head1 table").remove()
+    $("#head1").append(HeaderFactor)
 }
+function ShowDetailFactor(Detail_Factor) {
+    /* در صورتی که درکارتابل بود این قسمت نمایش داده میشود و لی اگر صفر بود منظور خود درخواست دهنده است که باید ویرایش نماید */
+    if (Detail_Factor[0].MasterId.Step > 0) {
+        var DetailFactor = "<table class='table'>"
+        DetailFactor += "<tr><th>کد فاکتور</th><th>نام کالا</th><th>نام تامین کننده کالا </th><th>تعداد در کاتن</th>" +
+            "<th>تعداد</th><th>فی کالا</th><th>مبلغ تخفیف پلکانی</th><th>مبلغ تخفیف ویژه</th>" +
+            "<th>مبلغ کل تخفیفات</th><th>مبلغ نهایی بدون مالیات و عوارض</th><th>مبلغ نهایی با مالیات و عوارض</th>" +
+            "<th>درصد تخفیف</th><th>درصد تخفیف</th><th>مبلغ تخفیف</th></tr>"
+        for (let index = 0; index < Detail_Factor.length; index++) {
+
+            DetailFactor += "<tr class='rows'  DataId=" + Detail_Factor[index].Id + ">" +
+                "<td> " + Detail_Factor[index].Id + "</td>" +
+                "<td> " + Detail_Factor[index].ProductName + "</td>" +
+                "<td> " + Detail_Factor[index].SuppName + "</td>" +
+                "<td>" + Detail_Factor[index].NoInpack + "</td>" +
+                "<td class='Famount'>" + Detail_Factor[index].Famount + "</td>" +
+                "<td class='UnitPrice'>" + SeparateThreeDigits(Detail_Factor[index].UnitPrice) + "</td>" +
+                "<td>" + Detail_Factor[index].GDiscount_Price + "</td>" +
+                "<td>" + Detail_Factor[index].VDiscount_Price + "</td>" +
+                "<td>" + SeparateThreeDigits(Detail_Factor[index].DiscountPrice) + "</td>" +
+                "<td>" + SeparateThreeDigits(Detail_Factor[index].FinalPriceWithTax) + "</td>" +
+                "<td>" + SeparateThreeDigits(Detail_Factor[index].FinalPriceWithoutTax) + "</td>" +
+                "<td style='color:red'> " + Detail_Factor[index].DiscountVal +
+                "<td style='color:black'><input value=" + Detail_Factor[index].DiscountVal + " type='number' class='discountVal'  onchange='CalulateDarsad(this," + Detail_Factor[index].Famount + "," + Detail_Factor[index].UnitPrice + ")'/></td>" +
+                "<td><span>" + SeparateThreeDigits(
+                    Math.round(
+                        (parseFloat(Detail_Factor[index].DiscountVal) *
+                            parseFloat(Detail_Factor[index].Famount) *
+                            parseFloat(Detail_Factor[index].UnitPrice)) / 100
+                    )
+                ) + "</span></td>" +
+                "</tr>"
+        }
+        DetailFactor += "</table>"
+    }
+    else {
+        var DetailFactor = "<table class='table'>"
+        DetailFactor += "<tr><th>کد فاکتور</th><th>نام کالا</th><th>نام تامین کننده کالا </th><th>تعداد در کاتن</th><th>تعداد</th><th>فی کالا</th><th>مبلغ تخفیف پلکانی</th><th>مبلغ تخفیف ویژه</th><th>مبلغ کل تخفیفات</th><th>مبلغ نهایی بدون مالیات و عوارض</th><th>مبلغ نهایی با مالیات و عوارض</th><th>مبلغ تخفیف</th></tr>"
+        for (let index = 0; index < Detail_Factor.length; index++) {
+            DetailFactor += "<tr class='rows' DataId=" + Detail_Factor[index].Id + ">" +
+                "<td> " + Detail_Factor[index].Id + "</td>" +
+                "<td> " + Detail_Factor[index].ProductName + "</td>" +
+                "<td> " + Detail_Factor[index].SuppName + "</td>" +
+                "<td>" + Detail_Factor[index].NoInpack + "</td>" +
+                "<td>" + Detail_Factor[index].Famount + "</td>" +
+                "<td>" + SeparateThreeDigits(Detail_Factor[index].UnitPrice) + "</td>" +
+                "<td>" + Detail_Factor[index].GDiscount_Price + "</td>" +
+                "<td>" + Detail_Factor[index].VDiscount_Price + "</td>" +
+                "<td>" + SeparateThreeDigits(Detail_Factor[index].DiscountPrice) + "</td>" +
+                "<td>" + SeparateThreeDigits(Detail_Factor[index].FinalPriceWithTax) + "</td>" +
+                "<td>" + SeparateThreeDigits(Detail_Factor[index].FinalPriceWithoutTax) + "</td>" +
+                "<td style='color:red'><input type='number' class='discountVal' value='" + Detail_Factor[index].DiscountVal + "'/></td>" +
+                "</tr>"
+        }
+        DetailFactor += "</table>"
+    }
+    $("#Detail1 table").remove()
+    $("#Detail1").append(DetailFactor)
+}
+function ShowDecision(obj, Detail_Factor, Discount_Confirm) {
+
+    /* در صورتی که درکارتابل بود این قسمت نمایش داده میشود و لی اگر صفر بود منظور خود درخواست دهنده است که باید ویرایش نماید */
+    if (Detail_Factor[0].MasterId.Step > 0) {
+        var DecisionDiv = "<table class='table'>"
+        DecisionDiv += "<tr>" +
+            "<td>توضیحات</td>" +
+            "<td><textarea  rows=4 cols=100  name='comment' form='usrform'    placeholder='توضیحات ...'></textarea></td>" +
+            "</tr>" +
+            "<tr>" +
+            "<td>نتیجه</td>" +
+            "<td><input type='radio' name='decide' value='true'> تایید<input type='radio' name='decide' value='false'> رد<br></td></tr>" +
+            "<tr><td colspan=2><button class='btnSave'    style='background-color:rgb(167, 16, 23)!important; border-radius: 17px;'   onclick='save({" +
+            "MasterId:" + obj.MasterId + "," +
+            "ServerBranchId:" + obj.ServerBranchId + "," +
+            "ConfirmId:" + Discount_Confirm[0].Id + "," +
+            "Step:" + obj.Step +
+            "})' " +
+            "type='button' class='btn btn-success'>ذخیره</button></td>"
+        "</tr>"
+        DecisionDiv += "</table>"
+    }
+    else {
+        var DecisionDiv = "<table class='table'>"
+        DecisionDiv += "<tr>" +
+            "<td>توضیحات</td>" +
+            "<td><textarea  rows=4 cols=100  name='comment' form='usrform'    placeholder='توضیحات ...'></textarea></td>" +
+            "</tr>" +
+            "<tr><td colspan=2><button class='btnSave'    style='background-color:rgb(167, 16, 23)!important; border-radius: 17px;'   onclick='saveEdit(" + obj.MasterId + ")' " +
+            "type='button' class='btn btn-success'>ویرایش</button></td>"
+        "</tr>"
+        DecisionDiv += "</table>"
+    }
+    $("#Decision1 table").remove()
+    $("#Decision1").append(DecisionDiv)
+}
+async function ShowLog(Log) {
+    var LogForm = "<table class='table'>"
+    LogForm += "<tr>" +
+        "<th>تایید کننده</th>" +
+        "<th>نتیجه</th>" +
+        "<th>توضیحات</th>" +
+        "<th>تاریخ</th>" +
+        "<th>زمان</th>" +
+        "</tr>"
+    for (let index = 0; index < Log.length; index++) {
+        LogForm += "<tr>" +
+            "<td>" + Log[index].ConfirmId.Title + "</td>" +
+            "<td>" + Log[index].Result + "</td>" +
+            "<td>" + Log[index].Dsc + "</td>" +
+            "<td>" + foramtDate(Log[index].DateConfirm) + "</td>" +
+            "<td>" + foramtTime(Log[index].TimeConfirm) + "</td>" +
+            "</tr>"
+    }
+    LogForm += "</table>"
+    $("#Log1 table").remove()
+    $("#Log1").append(LogForm)
+}
+
+//--------------------------
+function customConfirm(obj) {
+
+    return new Promise(resolve => {
+        Swal.fire({
+            title: "<p style='text-align: justify;'>احتراما مقدار تخفیف فاکتور جاری  " +
+                "<span style='color:red'>" +
+                SeparateThreeDigits(obj.sum) + "</span>" +
+                " کمتر از دارایی  " + "<span style='color:red'>" +
+                SeparateThreeDigits(obj.CurrentBudget) + "</span>" +
+                " میباشد</p>",
+            text: "در صورت موافقت بر روی دکمه  ادامه  کلیک نمایید",
+            icon: 'info',
+            showCancelButton: true,
+            cancelButtonText: 'توقف',
+            confirmButtonColor: '#3085d6!important',
+            cancelButtonColor: 'red!important',
+            confirmButtonText: 'ادامه'
+        }).then((result) => {
+            resolve(result)
+        })
+    });
+}
+//---------------------------CRUD
+
+
 //update
 function update_Master(Record) {
 
@@ -653,7 +736,6 @@ function update_Detail(Record) {
 function create_Log(Record, ConfirmatorId) {
 
     var x = new Date()
-    // var x1=x.getMonth() + 1+ "/" + x.getDate() + "/" + x.getYear(); 
     var x1 = x.getHours() + ":" + x.getMinutes() + ":" + x.getSeconds();
 
     return new Promise(resolve => {

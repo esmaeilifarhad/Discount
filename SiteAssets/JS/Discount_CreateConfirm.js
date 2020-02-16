@@ -572,7 +572,7 @@ async function showDetail(ID_IServerBranch) {
         table += "<td >" + (index + 1) + "</td>"
         table += "<td >" + ConfirmRowss[index].Title + "</td>"
         table += "<td>"
-        debugger
+        
         if( ConfirmRowss[index].Row==3 ||ConfirmRowss[index].Row==2||ConfirmRowss[index].Row==6)
         {
         var res = "<select disabled  class='chosen'><option></option>"
@@ -589,7 +589,7 @@ async function showDetail(ID_IServerBranch) {
                 x.ConfirmRow.Id ==
                 ConfirmRowss[index].Id
             );
-            debugger
+            
             if (res2 == undefined) {
                 res += "<option  value='" + users[index2].Id + "'>" + splitString(users[index2].Title, "(")[0] + "</option>"
             }
