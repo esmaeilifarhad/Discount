@@ -22,7 +22,6 @@ const Obj_Discount_ConfirmRows = {
     OrderBy: "Id",
     Is_Increase: true
 }
-
 const Obj_Discount_Confirm = {
     NameList: "Discount_Confirm",
     Select: "Confirmator/Title,Confirmator/Id,ServerBranch/Title,ServerBranch/Id,ConfirmRow/Title,ConfirmRow/Id,ConfirmRow/Row,Id,Title",
@@ -39,7 +38,6 @@ const Obj_Discount_ServerBranch = {
     OrderBy: "Moavenat/Title",
     Is_Increase: true
 }
-
 const Obj_Discount_Moavenat = {
     NameList: "Discount_Moavenat",
     Select: "User/Title,User/Id,Id,Title,CurrentBudget",
@@ -48,7 +46,6 @@ const Obj_Discount_Moavenat = {
     OrderBy: "CurrentBudget",
     Is_Increase: true
 }
-
 $(document).ready(function () {
     //-----npm initial header Request
     $pnp.setup({
@@ -216,7 +213,7 @@ async function ShowShoabTakhsisBudget() {
     Obj_Discount_ServerBranch.Is_Increase = false
     Obj_Discount_ServerBranch.Filter = filter
     var _ServerBranch = await get_Records(Obj_Discount_ServerBranch)
-    
+
     var table = "<table class='table'><tr><th>عنوان</th><th>بودجه</th></tr>"
     for (let index = 0; index < lstMoavenat.length; index++) {
         table += "<tr><td>" + lstMoavenat[index].Title + "</td><td>" + SeparateThreeDigits(lstMoavenat[index].CurrentBudget) + "</td></tr>"
@@ -377,13 +374,13 @@ async function saveTakhsisMoavenat() {
 }
 /*افزایش و کاهش بودجه معاونت */
 async function IncreseMoavenatBudget(ID) {
-    
+
     $('#btnSave').prop('disabled', true);
     $.LoadingOverlay("show");
 
     var Budget = $("#takhsisBudget input[name=Budget]").val();
-    Budget=parseInt(removeComma(Budget))
-    
+    Budget = parseInt(removeComma(Budget))
+
     var obj = { IsIncrease: true, BudgetPrice: Budget, Title: "معاونت", MoavenatId: ID, DateCreated: today, TimeCreated: CurrentTime(), UserIncreaserId: _spPageContextInfo.userId }
     var createDiscount_BudgetIncrease = await create_Record(obj, "Discount_BudgetIncrease")
 
@@ -409,7 +406,7 @@ async function DecreseMoavenatBudget(ID) {
     $('#btnSave').prop('disabled', true);
     $.LoadingOverlay("show");
     var Budget = parseInt($("#takhsisBudget input[name=Budget]").val());
-    Budget=parseInt(removeComma(Budget))
+    Budget = parseInt(removeComma(Budget))
 
     var obj = { IsIncrease: false, BudgetPrice: Budget, Title: "معاونت", MoavenatId: ID, DateCreated: today, TimeCreated: CurrentTime(), UserIncreaserId: _spPageContextInfo.userId }
     var createDiscount_BudgetIncrease = await create_Record(obj, "Discount_BudgetIncrease")
@@ -436,7 +433,7 @@ async function IncreseShoabBudget(obj) {
     $.LoadingOverlay("show");
 
     var Budget = $("#takhsisBudget input[name=Budget]").val();
-    Budget=parseInt(removeComma(Budget))
+    Budget = parseInt(removeComma(Budget))
 
     var obj1 = {
         IsIncrease: false, BudgetPrice: Budget, Title: "شعبه", MoavenatId: obj.MoavenatId,
@@ -477,7 +474,7 @@ async function DecreseShoabBudget(obj) {
     $.LoadingOverlay("show");
 
     var Budget = $("#takhsisBudget input[name=Budget]").val();
-  Budget=parseInt(removeComma(Budget))
+    Budget = parseInt(removeComma(Budget))
 
     var obj1 = {
         IsIncrease: true, BudgetPrice: Budget, Title: "شعبه", MoavenatId: obj.MoavenatId,
@@ -553,43 +550,50 @@ async function showDetail(ID_IServerBranch) {
     Obj_Discount_ConfirmRows.OrderBy = "Row"
     Obj_Discount_ConfirmRows.Is_Increase = true
     Obj_Discount_ConfirmRows.Filter = ""
-    var ConfirmRowss = await get_Records(Obj_Discount_ConfirmRows)
+    var Discount_ConfirmRows = await get_Records(Obj_Discount_ConfirmRows)
 
 
 
+    Obj_Discount_ServerBranch.OrderBy = "Id"
+    Obj_Discount_ServerBranch.Is_Increase = false
+    Obj_Discount_ServerBranch.ID = ID_IServerBranch
+    var Discount_ServerBranch = await get_RecordByID(Obj_Discount_ServerBranch)
+    debugger
 
-
-    // var ConfirmRowss = await Get_Discount_ConfirmRows()
+    if (Discount_ServerBranch.Moavenat.Id != undefined) {
+        Obj_Discount_Moavenat.ID = Discount_ServerBranch.Moavenat.Id
+        var Discount_Moavenat = await get_RecordByID(Obj_Discount_Moavenat)
+    }
+    debugger
 
     var table = "<table class='table'>"
     table += "<tr>" +
         "<th>ردیف</th>" +
         "<th>نام شعبه</th>" +
-        "<th>نام شعبه</th>" +
+        "<th>تایید کننده</th>" +
         "</tr>"
-    for (let index = 0; index < ConfirmRowss.length; index++) {
-        table += "<tr class='rows' dataId=" + ConfirmRowss[index].Id + ">"
+    for (let index = 0; index < Discount_ConfirmRows.length; index++) {
+        table += "<tr class='rows' dataId=" + Discount_ConfirmRows[index].Id + ">"
         table += "<td >" + (index + 1) + "</td>"
-        table += "<td >" + ConfirmRowss[index].Title + "</td>"
+        table += "<td >" + Discount_ConfirmRows[index].Title + "</td>"
         table += "<td>"
-        
-        if( ConfirmRowss[index].Row==3 ||ConfirmRowss[index].Row==2||ConfirmRowss[index].Row==6)
-        {
-        var res = "<select disabled  class='chosen'><option></option>"
+
+        if (Discount_ConfirmRows[index].Row == 3 || Discount_ConfirmRows[index].Row == 2 || Discount_ConfirmRows[index].Row == 6) {
+            var res = "<select disabled  class='chosen'><option></option>"
         }
-        else
-        {
-            var res = "<select  class='chosen'><option></option>" 
+        else {
+            var res = "<select  class='chosen'><option></option>"
         }
+       
         for (let index2 = 0; index2 < users.length; index2++) {
             var res2 = Confirmss.find(x =>
                 x.Confirmator.Id ==
                 users[index2].Id
                 &&
                 x.ConfirmRow.Id ==
-                ConfirmRowss[index].Id
+                Discount_ConfirmRows[index].Id
             );
-            
+
             if (res2 == undefined) {
                 res += "<option  value='" + users[index2].Id + "'>" + splitString(users[index2].Title, "(")[0] + "</option>"
             }
@@ -597,6 +601,15 @@ async function showDetail(ID_IServerBranch) {
                 res += "<option selected value='" + users[index2].Id + "'>" + splitString(users[index2].Title, "(")[0] + "</option>"
             }
 
+        }
+        if (Discount_ConfirmRows[index].Row == 2) {
+            if (Discount_ServerBranch.Moavenat.Id != undefined) {
+                 res +=  "<option selected value='" + Discount_Moavenat.User.Id + "'>" + splitString(Discount_Moavenat.User.Title, "(")[0] + "</option>"
+            }
+            else {
+                
+            }
+            
         }
         res += "</select>"
 

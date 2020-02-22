@@ -20,6 +20,15 @@ var LogTransactionObj = {}
 var _showLogStatus = false
 
 //-------------------------------------------
+const Obj_Discount_Master = {
+    NameList: "Discount_Master",
+    Select: "ServerBranch/Id,ServerBranch/Title,User/Id,User/Title,TypeTakhfif/Id,TypeTakhfif/Title,StatusWorkFlow/Id,StatusWorkFlow/Title," +
+        "Id,Title,SaleDocCode,OrderDate,TitleUser,TitleUser,CustomerCode,Step,DateCreated,sum,TimeCreated",
+    Filter: "",
+    Expand: "User,ServerBranch,TypeTakhfif,StatusWorkFlow",
+    OrderBy: "Id",
+    Is_Increase: true
+}
 const Obj_Discount_ServerBranch = {
     NameList: "Discount_ServerBranch",
     Select: "User/Id,User/Title,Moavenat/Title,Moavenat/Id,Id,Title,IP_Server,TitleBranch,DataBaseName,CurrentBudget",
@@ -54,14 +63,6 @@ const Obj_Discount_BaseData = {
 }
 
 
-/*
-List Name :
-
-Discount_ServerBranch
-Discount_UsersBranch
-Discount_BudgetIncrease
-
-*/
 $(document).ready(function () {
     //-----npm initial header Request
     $pnp.setup({
@@ -75,8 +76,6 @@ $(document).ready(function () {
     CurrentName = sessionStorage.getItem("PFName");
     CurrentDep = sessionStorage.getItem("DName");
     CurrentPLoginName = sessionStorage.getItem("CurrentPLoginName");
-
-
 
     today = todayShamsy8char()
 
@@ -116,10 +115,10 @@ async function showFormRequest() {
     table += "<td class='onvan'>کدمشتری</td>"
     table += "<td>" + Factor[0].CustomerCode + "</td>"
     table += "<td class='onvan'>نوع درخواست</td>"
-    table += "<td><select id='DarTaahod'>" 
+    table += "<td><select id='DarTaahod'>"
     for (let index = 0; index < Discount_BaseData.length; index++) {
-        table += "<option value="+Discount_BaseData[index].Id+">"+Discount_BaseData[index].Title+"</option>" 
-        
+        table += "<option value=" + Discount_BaseData[index].Id + ">" + Discount_BaseData[index].Title + "</option>"
+
     }
     table += "</select></td>"
     table += "</tr>"
@@ -139,7 +138,6 @@ async function showFormRequest() {
         "<th>نام تامین کننده</th>" +
         "<th>کد برند</th>" +
         "<th>نام برند</th>" +
-
         "<th>تعداد در کارتن</th>" +
         "<th>تعداد</th><th>فی کالا</th>" +
         "<th>درصد تخفیف نوعی</th>" +
@@ -171,7 +169,7 @@ async function showFormRequest() {
         table += "<td>" + Factor[index].SuppName + "</td>"
         table += "<td>" + Factor[index].BrandId + "</td>"
         table += "<td>" + Factor[index].BrandDesc + "</td>"
-                                       
+
         table += "<td>" + Factor[index].NoInpack + "</td>"
         // table += "<td>" + Factor[index].FinalBox + "</td>"
         table += "<td class='Famount'>" + Factor[index].Famount + "</td>"
@@ -191,7 +189,9 @@ async function showFormRequest() {
 
         table += "<td>" + SeparateThreeDigits(Factor[index].FinalPriceWithTax) + "</td>"
         table += "<td>" + SeparateThreeDigits(Factor[index].FinalPriceWithoutTax) + "</td>"
-        table += "<td style='color:black'><input type='number' class='discountVal'  onchange='CalulateDarsad(this," + Factor[index].Famount + "," + Factor[index].UnitPrice + ")'/></td>"
+        table += "<td style='color:black'>" +
+            "<input type='number' class='discountVal'  " +
+            "onchange='CalulateDarsad(this," + Factor[index].Famount + "," + Factor[index].UnitPrice + ")'/></td>"
         table += "<td><span>...</span></td>"
 
         table += "<td><span  onclick='showDetail(" + Factor[index].Productcode + ")' style='color:blue' class='fa fa-info'></span></td>"
@@ -208,15 +208,15 @@ async function ShowUserInfo() {
     Obj_Discount_ServerBranch.OrderBy = "CurrentBudget"
     Obj_Discount_ServerBranch.Is_Increase = false
     Obj_Discount_ServerBranch.Filter = "(User/Id eq " + _spPageContextInfo.userId + ")"
-    _ServerBranch = await get_Records(Obj_Discount_ServerBranch)
+    var Discount_ServerBranch = await get_Records(Obj_Discount_ServerBranch)
 
-    _ServiceObj = { IP_Server: _ServerBranch[0].IP_Server, DB: _ServerBranch[0].DataBaseName }
 
-    if (_ServerBranch.length > 1) {
+
+    if (Discount_ServerBranch.length > 1) {
         alert("شما مسول دو تا شعبه میباشد")
         return
     }
-    if (_ServerBranch.length > 1) {
+    if (Discount_ServerBranch.length > 1) {
         alert("هیچ شعبه ای به شما اختصاص داده نشده است")
         return
     }
@@ -224,22 +224,23 @@ async function ShowUserInfo() {
 
 
 
+    _ServiceObj = { IP_Server: Discount_ServerBranch[0].IP_Server, DB: Discount_ServerBranch[0].DataBaseName, ServerBranchId: Discount_ServerBranch[0].Id }
 
     var table = "<table class='table'>"
     table += "<tr class='rows'>"
-    table += "<td class='onvan'>نام</td><td>" + _ServerBranch[0].User.Title + "</td>"
+    table += "<td class='onvan'>نام</td><td>" + Discount_ServerBranch[0].User.Title + "</td>"
     table += "</tr>"
     table += "<tr class='rows'>"
-    table += "<td class='onvan'>شعبه</td><td>" + _ServerBranch[0].TitleBranch + "</td>"
+    table += "<td class='onvan'>شعبه</td><td>" + Discount_ServerBranch[0].TitleBranch + "</td>"
     table += "</tr>"
     table += "<tr class='rows' style='color:red'>"
-    table += "<td class='onvan' >دارایی</td><td>" + SeparateThreeDigits(_ServerBranch[0].CurrentBudget) + "</td>"
+    table += "<td class='onvan' >دارایی</td><td>" + SeparateThreeDigits(Discount_ServerBranch[0].CurrentBudget) + "</td>"
     table += "</tr>"
     table += "<tr class='rows'>"
     table += "<td class='onvan'>تاریخچه تراکنش ها</td><td><input type='button' value='نمایش' style='background-color:#59b351'  onclick='showLogBudget(" +
-        "{UserTitle:\"" + _ServerBranch[0].User.Title + "\"," +
-        "ServerBranchId:" + _ServerBranch[0].Id + "," +
-        "ServerBranchTitle:\"" + _ServerBranch[0].TitleBranch + "\"}" +
+        "{UserTitle:\"" + Discount_ServerBranch[0].User.Title + "\"," +
+        "ServerBranchId:" + Discount_ServerBranch[0].Id + "," +
+        "ServerBranchTitle:\"" + Discount_ServerBranch[0].TitleBranch + "\"}" +
         ")'/></td>"
     table += "</tr>"
     table += "</table>"
@@ -304,7 +305,7 @@ async function showLogBudget(Obj) {
     Obj_Discount_Detail.Filter = "(ServerBranch/Id eq " + Obj.ServerBranchId + ")"
     var DiscountVal = await get_Records(Obj_Discount_Detail)
     debugger
-    //var DiscountVal = await Get_Detail_DiscountVal();
+
 
     var types = {};
     for (let index2 = 0; index2 < DiscountVal.length; index2++) {
@@ -385,85 +386,6 @@ function ShowMessage(arrayMessage) {
     $.LoadingOverlay("hide");
     $('#btnSave').prop('disabled', false);
 }
-//--------------------------------------------------------------------CRUD
-
-function Get_Discount_ServerBranch() {
-    return new Promise(resolve => {
-        $pnp.sp.web.lists.
-            getByTitle("Discount_ServerBranch").
-            items.get().
-            then(function (items) {
-                resolve(items);
-            });
-    });
-}
-function Get_UsersBranch() {
-
-    return new Promise(resolve => {
-        $pnp.sp.web.lists.
-            getByTitle("Discount_UsersBranch").
-            items.
-            select("User/Title,User/Id,Branch/Title,Branch/Id,Id,Title").
-            filter("(User/Id eq " + _spPageContextInfo.userId + ")").
-            expand("User,Branch").
-            get().
-            then(function (items) {
-                resolve(items);
-            });
-    });
-
-}
-function Get_BudgetIncrease() {
-
-    return new Promise(resolve => {
-        $pnp.sp.web.lists.
-            getByTitle("Discount_BudgetIncrease").
-            items.
-            select("UsersBranch/Title,UsersBranch/Id,UsersBranch/IdUser,UserIncreaser/Title,UserIncreaser/Id,Id,Title,BudgetPrice,IsIncrease,DateCreated").
-            filter("(UsersBranch/IdUser eq " + _spPageContextInfo.userId + ")").
-            expand("UsersBranch,UserIncreaser").
-            get().
-            then(function (items) {
-
-                resolve(items);
-            });
-    });
-}
-function Get_Detail_DiscountVal() {
-
-    return new Promise(resolve => {
-        $pnp.sp.web.lists.
-            getByTitle("Discount_Detail").
-            items.
-            select("MasterId/IdUser,MasterId/SaleDocCode,MasterId/Id,MasterId/Title,Id,Title,DiscountVal,MasterId/DateCreated,Famount,UnitPrice").
-            filter("(MasterId/IdUser eq " + _spPageContextInfo.userId + ")").
-            expand("MasterId").
-            get().
-            then(function (items) {
-
-                resolve(items);
-            }).catch(error => {
-                console.log(error)
-                resolve(error);
-            });
-    });
-}
-function Get_Master_IsDuplicate(SaleDocCode) {
-
-    return new Promise(resolve => {
-        $pnp.sp.web.lists.
-            getByTitle("Discount_Master").
-            items.
-            // select("User/Title,User/Id,Branch/Title,Branch/Id,Id,Title").
-            filter("(SaleDocCode eq " + SaleDocCode + ")").
-            // expand("User,Branch").
-            get().
-            then(function (items) {
-                resolve(items);
-            });
-    });
-
-}
 
 //-------------------------------------Find Factor
 async function FindFactor() {
@@ -471,7 +393,6 @@ async function FindFactor() {
 
     var Factor = $("input[name='factorSearch']").val();
     _ServiceObj.Factor = Factor
-
     var Factor = await serviceDiscount(_ServiceObj);
 
     Factor = Factor.lstInvoice
@@ -496,11 +417,26 @@ async function SaveFactor() {
     $('#btnSave').prop('disabled', true);
     $.LoadingOverlay("show");
 
-    //var DarTaahod = $("#DarTaahod option:selected").text();
     var TypeTakhfif = $("#DarTaahod option:selected").val();
 
+    Obj_Discount_ServerBranch.OrderBy = "Id"
+    Obj_Discount_ServerBranch.Is_Increase = false
+    Obj_Discount_ServerBranch.ID = _ServiceObj.ServerBranchId
+    // var  Discount_ServerBranch = await get_RecordByID(Obj_Discount_ServerBranch)
 
-    var arrayMessage = []
+    Obj_Discount_Master.OrderBy = "Id"
+    Obj_Discount_Master.Is_Increase = false
+    Obj_Discount_Master.Filter = "(SaleDocCode eq " + _Factor[0].SaleDocCode + ")"
+    // var Discount_Master = await get_Records(Obj_Discount_Master)
+
+    var results = await Promise.all([
+        get_RecordByID(Obj_Discount_ServerBranch),
+        get_Records(Obj_Discount_Master)
+    ]);
+
+    var Discount_ServerBranch = results[0]
+    var Discount_Master = results[1]
+
     var _sum = 0
     $("#ShowFactorDetail table  .rows").each(function () {
 
@@ -512,29 +448,33 @@ async function SaveFactor() {
             var UnitPrice = parseFloat($(this).find(".UnitPrice").text())
 
             _Factor[DataId].DiscountVal = parseFloat($(this).find(".discountVal").val())
-            _sum += (discountVal * Famount * UnitPrice) / 100
+            _sum += Math.round((discountVal * Famount * UnitPrice) / 100)
+
         }
         else {
             _Factor[DataId].DiscountVal = 0
         }
 
     })
-    var Master_IsDuplicate = await Get_Master_IsDuplicate(_Factor[0].SaleDocCode);
-    if (Master_IsDuplicate.length > 0) {
 
-        arrayMessage.push({ message: "برای این فاکتور تخفیف گرفته شده است" })
-    }
-    if (_sum == 0) {
+    var arrayMessage = checkValidation(Discount_Master, _sum, Discount_ServerBranch)
 
-        arrayMessage.push({ message: "هیچ تخفیفی در نظر گرفته نشده است" })
-    }
-    if (_sum > _CurrentBudget) {
-        arrayMessage.push({ message: "بودجه شما کافی نمیباشد" })
-    }
     if (arrayMessage.length > 0) {
         ShowMessage(arrayMessage)
     }
     else {
+        if (Discount_ServerBranch.CurrentBudget < _sum) {
+            $.LoadingOverlay("hide");
+            var res = await customConfirm({ sum: _sum, CurrentBudget: Discount_ServerBranch.CurrentBudget })
+            if (res.value == true) {
+                $.LoadingOverlay("show");
+            }
+            else {
+                $.LoadingOverlay("hide");
+                $('#btnSave').prop('disabled', false);
+                return;
+            }
+        }
 
         var statusSave = false;
         //----master
@@ -555,15 +495,17 @@ async function SaveFactor() {
             TitleUser: _spPageContextInfo.userLoginName,
             DateCreated: today,
             Step: 1,
+            StatusWorkFlowId: 4,/*در گردش*/
             CID: CurrentCID,
-            TypeTakhfifId: _Factor[0].TypeTakhfif,
-            ServerBranchId: _ServerBranch[0].Id,
+            TypeTakhfifId: TypeTakhfif,
+            IDTypeTakhfif: TypeTakhfif,
+            ServerBranchId: _ServiceObj.ServerBranchId,
             TimeCreated: CurrentTime(),
         }
 
 
         /*-----------ویرایش موجودی شعبه----------------- */
-        Obj_Discount_ServerBranch.ID = _ServerBranch[0].Id
+        Obj_Discount_ServerBranch.ID = _ServiceObj.ServerBranchId
         var get_Discount_ServerBranch = await get_RecordByID(Obj_Discount_ServerBranch)
 
         var price = get_Discount_ServerBranch.CurrentBudget - Math.round(_sum)
@@ -600,7 +542,9 @@ async function SaveFactor() {
                 FinalBox: _Factor[index].FinalBox,
                 DiscountVal: _Factor[index].DiscountVal.toString(),
                 DateCreated: todayShamsy8char(),
-                ServerBranchId: _ServerBranch[0].Id,
+                ServerBranchId: _ServiceObj.ServerBranchId,
+                BrandId: _Factor[index].BrandId,
+                BrandDesc: _Factor[index].BrandDesc ,
                 Step: 1,
 
             }
@@ -637,10 +581,48 @@ function CalulateDarsad(thiss, Famount, UnitPrice) {
     var val = $(thiss).val()
     //console.log($(thiss).parent().next().find("span"))
     $(thiss).parent().next().find("span").remove()
-    $(thiss).parent().next().append("<span>" + SeparateThreeDigits((val * Famount * UnitPrice) / 100) + "</span>")
+    $(thiss).parent().next().append("<span>" + SeparateThreeDigits(Math.round((val * Famount * UnitPrice) / 100)) + "</span>")
     // alert(SeparateThreeDigits((val*Famount*Famount)/100))
 }
 
+function checkValidation(Discount_Master, _sum, Discount_ServerBranch) {
+
+    var arrayMessage = []
+    if (Discount_Master.length > 0) {
+
+        arrayMessage.push({ message: "برای این فاکتور تخفیف گرفته شده است" })
+    }
+    if (_sum == 0) {
+
+        arrayMessage.push({ message: "هیچ تخفیفی در نظر گرفته نشده است" })
+    }
+    // if (_sum > Discount_ServerBranch.CurrentBudget) {
+    //     arrayMessage.push({ message: "بودجه شما کافی نمیباشد" })
+    // }
+    return arrayMessage
+}
+function customConfirm(obj) {
+
+    return new Promise(resolve => {
+        Swal.fire({
+            title: "<p style='text-align: justify;'>احتراما مقدار تخفیف فاکتور جاری  " +
+                "<span style='color:red'>" +
+                SeparateThreeDigits(obj.sum) + "</span>" +
+                " کمتر از دارایی  " + "<span style='color:red'>" +
+                SeparateThreeDigits(obj.CurrentBudget) + "</span>" +
+                " میباشد</p>",
+            text: "در صورت موافقت بر روی دکمه  ادامه  کلیک نمایید",
+            icon: 'info',
+            showCancelButton: true,
+            cancelButtonText: 'توقف',
+            confirmButtonColor: '#3085d6!important',
+            cancelButtonColor: 'red!important',
+            confirmButtonText: 'ادامه'
+        }).then((result) => {
+            resolve(result)
+        })
+    });
+}
 //-------------کاربران ثبت کننده تخفیف    223---------------------- Users in Group
 function IsUserInGroup(id) {
     //  کاربران ثبت کننده تخفیف    223
