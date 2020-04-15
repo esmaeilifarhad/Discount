@@ -13,39 +13,6 @@ var Confirmss = []
 var _IDServerBranch = 0
 //----------------------------
 
-
-const Obj_Discount_ConfirmRows = {
-    NameList: "Discount_ConfirmRows",
-    Select: "Id,Title,Row",
-    Filter: "",
-    Expand: "",
-    OrderBy: "Id",
-    Is_Increase: true
-}
-const Obj_Discount_Confirm = {
-    NameList: "Discount_Confirm",
-    Select: "Confirmator/Title,Confirmator/Id,ServerBranch/Title,ServerBranch/Id,ConfirmRow/Title,ConfirmRow/Id,ConfirmRow/Row,Id,Title",
-    Filter: "",
-    Expand: "Confirmator,ServerBranch,ConfirmRow",
-    OrderBy: "Moavenat/Title",
-    Is_Increase: true
-}
-const Obj_Discount_ServerBranch = {
-    NameList: "Discount_ServerBranch",
-    Select: "Moavenat/Title,Moavenat/Id,Id,Title,IP_Server,TitleBranch,DataBaseName,CurrentBudget",
-    Filter: "",
-    Expand: "Moavenat",
-    OrderBy: "Moavenat/Title",
-    Is_Increase: true
-}
-const Obj_Discount_Moavenat = {
-    NameList: "Discount_Moavenat",
-    Select: "User/Title,User/Id,Id,Title,CurrentBudget",
-    Filter: "",
-    Expand: "User",
-    OrderBy: "CurrentBudget",
-    Is_Increase: true
-}
 $(document).ready(function () {
     //-----npm initial header Request
     $pnp.setup({
@@ -158,6 +125,16 @@ async function ShowMoavenat() {
 }
 //تخصیص بودجه به معاونت توسط مدیر عامل
 async function ShowMoavenatTakhsisBudget() {
+
+    var IsMember = await IsCurrentUserMemberOfGroup(274)
+    /*
+     تخفیف مازاد - مدیر عامل - گلپخش اول    274
+ */
+    if (IsMember == false) {
+        alert("شما به این بخش دسترسی ندارید")
+        return
+    }
+
     var lstMoavenat = await Get_Moavenat()
     _Utility = []
     _Utility = lstMoavenat
@@ -168,6 +145,8 @@ async function ShowMoavenatTakhsisBudget() {
         "<th>نام معاونت</th>" +
         "<th>بودجه جاری</th>" +
         "<th>افزایش بودجه</th>" +
+        "<th>تاریخچه تراکنش</th>" +
+
         "</tr>"
     for (let index = 0; index < lstMoavenat.length; index++) {
         table += "<tr class='rows' DataId=" + lstMoavenat[index].Id + ">"
@@ -179,7 +158,14 @@ async function ShowMoavenatTakhsisBudget() {
             "onclick='ShowIncreseDecreseMoavenatBudget(" +
             "{MoavenatTitle:\"" + lstMoavenat[index].Title + "\"," +
             "MoavenatId:" + lstMoavenat[index].Id + "})'" +
-            "value='افزایش/کاهش'    style='background-color: rgb(22, 184, 103);margin: 1px;' />" +
+            "value='افزایش/کاهش'    style='background-color: green!important;margin: 1px;' />" +
+            "</td>"
+        table += "<td >" +
+            "<input type='button' id='btnSaveMoavenat' " +
+            "onclick='ShowMoavenatBudgetLog(" +
+            "{MoavenatTitle:\"" + lstMoavenat[index].Title + "\"," +
+            "MoavenatId:" + lstMoavenat[index].Id + "})'" +
+            "value='تاریخچه'    style='background-color: #2f78e6!important ;margin: 1px;' />" +
             "</td>"
         table += "</tr>"
     }
@@ -192,6 +178,71 @@ async function ShowMoavenatTakhsisBudget() {
     })
 
 }
+
+//تخصیص بودجه به مدیر بازاریابی توسط مدیر عامل
+async function ShowModirBaziabyTakhsisBudget() {
+    var IsMember = await IsCurrentUserMemberOfGroup(274)
+    /*
+     تخفیف مازاد - مدیر عامل - گلپخش اول    274
+ */
+    if (IsMember == false) {
+        alert("شما به این بخش دسترسی ندارید")
+        return
+    }
+
+    Obj_MarketingDirector.OrderBy = "Id"
+    Obj_MarketingDirector.Is_Increase = false
+    Obj_MarketingDirector.Filter = ""
+
+    var results = await Promise.all([
+        get_Records(Obj_MarketingDirector),
+    ]);
+
+
+    var MarketingDirector = results[0]
+
+
+    var table = "<table class='table'>"
+    table += "<tr>" +
+        "<th>ردیف</th>" +
+        "<th>نام مدیر بازاریابی</th>" +
+        "<th>بودجه جاری</th>" +
+        "<th>افزایش بودجه</th>" +
+        "<th>تاریخچه</th>" +
+        "</tr>"
+    for (let index = 0; index < MarketingDirector.length; index++) {
+        table += "<tr class='rows' DataId=" + MarketingDirector[index].Id + ">"
+        table += "<td >" + (index + 1) + "</td>"
+        table += "<td >" + MarketingDirector[index].Title + "</td>"
+        table += "<td >" + SeparateThreeDigits(MarketingDirector[index].CurrentBudget) + "</td>"
+        table += "<td >" +
+            "<input type='button' id='btnSaveMoavenat' " +
+            "onclick='ShowIncreseDecreseModirBaziabyBudget(" +
+            "{MarketingDirectorTitle:\"" + MarketingDirector[index].Title + "\"," +
+            "MarketingDirectorId:" + MarketingDirector[index].Id + "})'" +
+            "value='افزایش/کاهش'    style='background-color: rgb(22, 184, 103);margin: 1px;' />" +
+            "</td>"
+
+        table += "<td >" +
+            "<input type='button' id='btnSaveMoavenat' " +
+            "onclick='ShowMarketingDirectorBudgetLog(" +
+            "{MarketingDirectorTitle:\"" + MarketingDirector[index].Title + "\"," +
+            "MarketingDirectorId:" + MarketingDirector[index].Id + "})'" +
+            "value='تاریخچه'    style='background-color: #2f78e6!important ;margin: 1px;' />" +
+            "</td>"
+        table += "<td ><a onclick='test()' href='https://portal.golrang.com/services/discount/Pages/Discount_UserRquest.aspx' target='_blank'>click new page</a></td>"
+        table += "</tr>"
+    }
+    table += "</table>"
+
+    $("#ShowModirBaziabyTakhsisBudget table").remove()
+    $("#ShowModirBaziabyTakhsisBudget").append(table)
+    return new Promise(resolve => {
+        resolve("finish")
+    })
+
+}
+
 //تخصیص بودجه به شعب توسط  معاونت
 async function ShowShoabTakhsisBudget() {
 
@@ -231,6 +282,7 @@ async function ShowShoabTakhsisBudget() {
         "<th>بودجه جاری</th>" +
         "<th>معاونت</th>" +
         "<th>افزایش بودجه</th>" +
+        "<th>تاریخچه</th>" +
         "</tr>"
     for (let index = 0; index < _ServerBranch.length; index++) {
         var MoavenatTitle = "'[" + _ServerBranch[index].Moavenat.Title + "]'"
@@ -249,6 +301,13 @@ async function ShowShoabTakhsisBudget() {
             "MoavenatId:" + _ServerBranch[index].Moavenat.Id + "," +
             "ServerBranchId:" + _ServerBranch[index].Id + "})'  style='background-color: rgb(22, 184, 103);margin: 1px;' /></td>"
 
+        table += "<td >" +
+            "<input type='button' id='btnSaveMoavenat' " +
+            "onclick='ShowShoabBudgetLog(" +
+            "{ServerBranchTitle:\"" + _ServerBranch[index].Title + "\"," +
+            "ServerBranchId:" + _ServerBranch[index].Id + "})'" +
+            "value='تاریخچه'    style='background-color: #2f78e6!important ;margin: 1px;' />" +
+            "</td>"
         table += "</tr>"
     }
     table += "</table>"
@@ -257,6 +316,69 @@ async function ShowShoabTakhsisBudget() {
     return new Promise(resolve => {
         resolve("finish")
     })
+}
+//تخصیص مدیر بازایابی به برند
+async function ShowBrandModirBaziaby() {
+    Obj_MarketingDirector.OrderBy = "Id"
+    Obj_MarketingDirector.Is_Increase = false
+    Obj_MarketingDirector.Filter = ""
+    // var MarketingDirector = await get_Records(Obj_MarketingDirector)
+
+
+    Obj_Discount_Brand.OrderBy = "Id"
+    Obj_Discount_Brand.Is_Increase = false
+    Obj_Discount_Brand.Filter = ""
+    //  var Discount_Brand = await get_Records(Obj_Discount_Brand)
+
+    var results = await Promise.all([
+        get_Records(Obj_MarketingDirector),
+        get_Records(Obj_Discount_Brand),
+    ]);
+
+
+    var MarketingDirector = results[0]
+    var Discount_Brand = results[1]
+
+
+
+
+    var table = "<table class='table'>"
+    table += "<tr>" +
+        "<th>ردیف</th>" +
+        "<th>نام برند</th>" +
+        "<th><input type='button' id='btnSaveMoavenat' onclick='saveTakhsisBrandToBazaryaby()' value='ذخیره'    style='background-color: rgb(22, 184, 103);margin: 1px;' /></th>" +
+        "</tr>"
+    for (let index = 0; index < Discount_Brand.length; index++) {
+        table += "<tr class='rows' DataId=" + Discount_Brand[index].Id + ">"
+        table += "<td >" + (index + 1) + "</td>"
+        table += "<td >" + Discount_Brand[index].Title + "</td>"
+        table += "<td>"
+
+        var res = "<select class='chosen'><option></option>"
+        for (let index2 = 0; index2 < MarketingDirector.length; index2++) {
+
+
+            if (Discount_Brand[index].MarketingDirector.Id == MarketingDirector[index2].Id) {
+                res += "<option selected value='" + MarketingDirector[index2].Id + "'>" + MarketingDirector[index2].Title + "</option>"
+            }
+            else {
+                res += "<option  value='" + MarketingDirector[index2].Id + "'>" + MarketingDirector[index2].Title + "</option>"
+            }
+
+        }
+        res += "</select>"
+
+        table += res + "</td>"
+        table += "</tr>"
+    }
+    table += "</table>"
+    $("#showBrandModirBaziaby table").remove()
+    $("#showBrandModirBaziaby").append(table)
+    return new Promise(resolve => {
+        resolve("finish")
+    })
+
+
 }
 async function ShowIncreseDecreseMoavenatBudget(obj) {
 
@@ -271,7 +393,11 @@ async function ShowIncreseDecreseMoavenatBudget(obj) {
         "<table style='margin:0 auto'>" +
         "<tr><td>مقدار بودجه " + obj.MoavenatTitle + "</td><td>" + SeparateThreeDigits(Discount_Moavenat.CurrentBudget) + "</td></tr>" +
         "<tr><td>مقدار به تومان</td><td><input type='text' name='Budget' onkeyup='changeInputToThreeDigit(this)'/></td></tr>" +
-        "<tr><td><input type='button'  onclick='IncreseMoavenatBudget(" + obj.MoavenatId + ")' value='افزایش'    style='background-color: rgb(22, 184, 103);margin: 1px;' /></td>" +
+        "<tr><td><input type='button' " +
+        "onclick='IncreseMoavenatBudget(" +
+        "{MoavenatId:" + obj.MoavenatId + "," +
+        "MoavenatTitle:\"" + obj.MoavenatTitle + "\"})' " +
+        "value='افزایش'    style='background-color: rgb(22, 184, 103);margin: 1px;' /></td>" +
         "<td><input type='button'  onclick='DecreseMoavenatBudget(" + obj.MoavenatId + ")' value='کاهش'    style='background-color: red!important;margin: 1px;' /></td></tr>" +
         "</table></div>"
     $("#takhsisBudget div").remove();
@@ -279,7 +405,164 @@ async function ShowIncreseDecreseMoavenatBudget(obj) {
 
     OpenDialog("#window2")
 }
+async function ShowIncreseDecreseModirBaziabyBudget(obj) {
+
+    Obj_MarketingDirector.OrderBy = "Id"
+    Obj_MarketingDirector.Is_Increase = false
+    Obj_MarketingDirector.ID = obj.MarketingDirectorId
+
+    var results = await Promise.all([
+        get_RecordByID(Obj_MarketingDirector),
+    ]);
+
+
+    var MarketingDirector = results[0]
+
+
+
+    var tagHtml = "<div>" +
+        "<table style='margin:0 auto'>" +
+        "<tr><td>مقدار بودجه " + obj.MarketingDirectorTitle + "</td><td>" + SeparateThreeDigits(MarketingDirector.CurrentBudget) + "</td></tr>" +
+        "<tr><td>مقدار به تومان</td><td><input type='text' name='Budget' onkeyup='changeInputToThreeDigit(this)'/></td></tr>" +
+        "<tr><td><input type='button' " +
+        "onclick='IncDecModirBaziabyBudget(" +
+        "{MarketingDirectorId:" + obj.MarketingDirectorId + ",MarketingDirectorTitle:\""+obj.MarketingDirectorTitle+"\",IncDec:\"Inc\"})' value='افزایش'    style='background-color: rgb(22, 184, 103);margin: 1px;' /></td>" +
+        "<td><input type='button'  onclick='IncDecModirBaziabyBudget({MarketingDirectorId:" + obj.MarketingDirectorId + ",MarketingDirectorTitle:\""+obj.MarketingDirectorTitle+"\",IncDec:\"Dec\"})' value='کاهش'    style='background-color: red!important;margin: 1px;' /></td></tr>" +
+        "</table></div>"
+    $("#takhsisBudget div").remove();
+    $("#takhsisBudget").append(tagHtml);
+
+    OpenDialog("#window2")
+}
+//مشاهده لاگ مربوط به تخصیص بودجه به معاونت توسط مدیر عامل
+async function ShowMoavenatBudgetLog(obj) {
+    Obj_Discount_BudgetIncrease.OrderBy = "Id"
+    Obj_Discount_BudgetIncrease.Is_Increase = true
+    Obj_Discount_BudgetIncrease.Filter = "(Moavenat/Id eq " + obj.MoavenatId + ")"
+
+
+
+    var results = await Promise.all([
+        get_Records(Obj_Discount_BudgetIncrease),
+    ]);
+
+
+    var Discount_BudgetIncrease = results[0]
+
+    var table = "<table class='table'>"
+    table += "<tr>" +
+        "<th>ردیف</th>" +
+        "<th>ریال</th>" +
+        "<th>افزایش/کاهش</th>" +
+        "<th>توضیحات</th>" +
+        "<th>تاریخ</th>" +
+        "<th>زمان</th>" +
+        "</tr>"
+    for (let index = 0; index < Discount_BudgetIncrease.length; index++) {
+
+        table += "<tr class='rows' DataId=" + Discount_BudgetIncrease[index].Id + ">"
+        table += "<td >" + (index + 1) + "</td>"
+        table += "<td >" + SeparateThreeDigits(Discount_BudgetIncrease[index].BudgetPrice) + "</td>"
+        table += "<td >" + (Discount_BudgetIncrease[index].IsIncrease == false ? 'کاهش' : 'افزایش') + "</td>"
+        table += "<td >" + Discount_BudgetIncrease[index].dsc + "</td>"
+        table += "<td >" + foramtDate(Discount_BudgetIncrease[index].DateCreated) + "</td>"
+        table += "<td >" + foramtTime(Discount_BudgetIncrease[index].TimeCreated) + "</td>"
+        table += "</tr>"
+    }
+    table += "</table>"
+
+    $("#showMoavenatTakhsisLog table").remove();
+    $("#showMoavenatTakhsisLog").append(table);
+
+
+}
+//مشاهده لاگ مربوط به مدیر بازاریابی
+async function ShowMarketingDirectorBudgetLog(obj) {
+    Obj_Discount_BudgetIncrease.OrderBy = "Id"
+    Obj_Discount_BudgetIncrease.Is_Increase = true
+    Obj_Discount_BudgetIncrease.Filter = "(MarketingDirector/Id eq " + obj.MarketingDirectorId + ")"
+
+
+
+    var results = await Promise.all([
+        get_Records(Obj_Discount_BudgetIncrease),
+    ]);
+
+
+    var Discount_BudgetIncrease = results[0]
+
+    var table = "<table class='table'><caption align='top'>تاریخچه</caption>"
+
+    table += "<tr>" +
+        "<th>ردیف</th>" +
+        "<th>ریال</th>" +
+        "<th>افزایش/کاهش</th>" +
+        "<th>توضیحات</th>" +
+        "<th>تاریخ</th>" +
+        "<th>زمان</th>" +
+        "</tr>"
+    for (let index = 0; index < Discount_BudgetIncrease.length; index++) {
+
+
+        table += "<tr class='rows' DataId=" + Discount_BudgetIncrease[index].Id + ">"
+        table += "<td >" + (index + 1) + "</td>"
+        table += "<td >" + SeparateThreeDigits(Discount_BudgetIncrease[index].BudgetPrice) + "</td>"
+        table += "<td >" + (Discount_BudgetIncrease[index].IsIncrease == false ? 'کاهش' : 'افزایش') + "</td>"
+        table += "<td >" + Discount_BudgetIncrease[index].dsc + "</td>"
+        table += "<td >" + foramtDate(Discount_BudgetIncrease[index].DateCreated) + "</td>"
+        table += "<td >" + foramtTime(Discount_BudgetIncrease[index].TimeCreated) + "</td>"
+        table += "</tr>"
+    }
+    table += "</table>"
+
+    $("#showModirBaziabyTakhsisLog table").remove();
+    $("#showModirBaziabyTakhsisLog").append(table);
+
+
+}
+async function ShowShoabBudgetLog(obj) {
+    Obj_Discount_BudgetIncrease.OrderBy = "Id"
+    Obj_Discount_BudgetIncrease.Is_Increase = true
+    Obj_Discount_BudgetIncrease.Filter = "(ServerBranch/Id eq " + obj.ServerBranchId + ")"
+
+
+
+    var results = await Promise.all([
+        get_Records(Obj_Discount_BudgetIncrease),
+    ]);
+
+
+    var Discount_BudgetIncrease = results[0]
+    var table = "<table class='table'>"
+    table += "<tr>" +
+        "<th>ردیف</th>" +
+        "<th>ریال</th>" +
+        "<th>افزایش/کاهش</th>" +
+        "<th>توضیحات</th>" +
+        "<th>تاریخ</th>" +
+        "<th>زمان</th>" +
+        "</tr>"
+    for (let index = 0; index < Discount_BudgetIncrease.length; index++) {
+
+        table += "<tr class='rows' DataId=" + Discount_BudgetIncrease[index].Id + ">"
+        table += "<td >" + (index + 1) + "</td>"
+        table += "<td >" + SeparateThreeDigits(Discount_BudgetIncrease[index].BudgetPrice) + "</td>"
+        table += "<td >" + (Discount_BudgetIncrease[index].IsIncrease == false ? 'کاهش' : 'افزایش') + "</td>"
+        table += "<td >" + Discount_BudgetIncrease[index].dsc + "</td>"
+        table += "<td >" + foramtDate(Discount_BudgetIncrease[index].DateCreated) + "</td>"
+        table += "<td >" + foramtTime(Discount_BudgetIncrease[index].TimeCreated) + "</td>"
+        table += "</tr>"
+    }
+    table += "</table>"
+
+
+    $("#ShowShoabBudgetLog table").remove();
+    $("#ShowShoabBudgetLog").append(table);
+
+    OpenDialog("#window3")
+}
 async function IncDecShoabtBudget(obj) {
+
     Obj_Discount_Moavenat.ID = obj.MoavenatId
     var Discount_Moavenat = await get_RecordByID(Obj_Discount_Moavenat)
 
@@ -288,6 +571,7 @@ async function IncDecShoabtBudget(obj) {
         "<tr><td>مبدا </td><td>" + obj.MoavenatTitle + "</td></tr>" +
         "<tr><td>مقصد </td><td>" + obj.BranchTitle + "</td></tr>" +
         "<tr><td>مقدار بودجه </td><td>" + SeparateThreeDigits(Discount_Moavenat.CurrentBudget) + "</td></tr>" +
+        "<tr><td>درصد</td><td><input type='number'  onkeyup='BudgetDarsadToShoab(this,{MoavenatCurrentBudget:"+Discount_Moavenat.CurrentBudget+"})'  name='BudgetDarsad'/></td></tr>" +
         "<tr><td>مقدار به تومان</td><td><input type='text'  onkeyup='changeInputToThreeDigit(this)'  name='Budget'/></td></tr>" +
         "<tr><td><input type='button'  onclick='IncreseShoabBudget({MoavenatId:" + obj.MoavenatId + ",ServerBranchId:" + obj.ServerBranchId + "})' value='افزایش'    style='background-color: rgb(22, 184, 103);margin: 1px;' /></td>" +
         "<td><input type='button'  onclick='DecreseShoabBudget({MoavenatId:" + obj.MoavenatId + ",ServerBranchId:" + obj.ServerBranchId + "})' value='کاهش'    style='background-color: red!important;margin: 1px;' /></td></tr>" +
@@ -299,8 +583,14 @@ async function IncDecShoabtBudget(obj) {
 
 }
 async function save() {
+
     $('#btnSave').prop('disabled', true);
     $.LoadingOverlay("show");
+
+    Obj_Discount_Confirm.OrderBy = "Id"
+    Obj_Discount_Confirm.Is_Increase = false
+    Obj_Discount_Confirm.Filter = " (ServerBranch/Id eq " + _IDServerBranch + ")"
+    var Discount_Confirm = await get_Records(Obj_Discount_Confirm)
 
 
     $("#confirm1 table  .rows").each(async function () {
@@ -310,7 +600,7 @@ async function save() {
         var peopleId = $(this).find("select option:selected").val();
         if (peopleId != "") {
 
-            var res2 = Confirmss.find(x =>
+            var res2 = Discount_Confirm.find(x =>
                 x.ServerBranch.Id ==
                 _IDServerBranch
                 &&
@@ -372,8 +662,70 @@ async function saveTakhsisMoavenat() {
     // $("#window").data("kendoWindow").close();
     $('#btnSaveMoavenat').prop('disabled', false);
 }
+async function saveTakhsisBrandToBazaryaby() {
+    $('#btnSave').prop('disabled', true);
+    $.LoadingOverlay("show");
+
+    //--------------------------------------
+    Obj_MarketingDirector.OrderBy = "Id"
+    Obj_MarketingDirector.Is_Increase = false
+    Obj_MarketingDirector.Filter = ""
+
+
+    Obj_Discount_Brand.OrderBy = "Id"
+    Obj_Discount_Brand.Is_Increase = false
+    Obj_Discount_Brand.Filter = ""
+
+    var results = await Promise.all([
+        get_Records(Obj_MarketingDirector),
+        get_Records(Obj_Discount_Brand),
+    ]);
+
+
+    var MarketingDirector = results[0]
+    var Discount_Brand = results[1]
+    //----------------------------------------
+
+    $("#showBrandModirBaziaby table  .rows").each(async function () {
+
+        var DataId = $(this).attr("DataId")
+        var MarketingDirectorTitle = $(this).find("select option:selected").text();
+        var MarketingDirectorId = $(this).find("select option:selected").val();
+
+        if (MarketingDirectorId != "") {
+            var res2 = Discount_Brand.find(x =>
+                x.MarketingDirector.Id ==
+                parseInt(MarketingDirectorId)
+                &&
+                x.Id == parseInt(DataId)
+            );
+
+            if (res2 == undefined) {
+                //update
+                // var obj = { Title: peopleTitle, ServerBranchId: _IDServerBranch, ConfirmRowId: parseInt(DataId), ConfirmatorId: parseInt(peopleId) }
+                // var createDiscount_Confirm = await create_Record(obj, "Discount_Confirm")
+                
+                var obj = { MarketingDirectorId: parseInt(MarketingDirectorId) }
+                var updateDiscount_Brand = await update_Record(parseInt(DataId), obj, "Discount_Brand")
+                
+            }
+            else {
+
+                //update
+
+                //  var obj = {  MarketingDirectorId: parseInt(MarketingDirectorId) }
+                // var updateDiscount_Brand = await update_Record(parseInt(DataId), obj, "Discount_Brand")
+
+            }
+        }
+    })
+
+    $.LoadingOverlay("hide");
+   // $("#window").data("kendoWindow").close();
+    $('#btnSave').prop('disabled', false);
+}
 /*افزایش و کاهش بودجه معاونت */
-async function IncreseMoavenatBudget(ID) {
+async function IncreseMoavenatBudget(obj) {
 
     $('#btnSave').prop('disabled', true);
     $.LoadingOverlay("show");
@@ -381,17 +733,26 @@ async function IncreseMoavenatBudget(ID) {
     var Budget = $("#takhsisBudget input[name=Budget]").val();
     Budget = parseInt(removeComma(Budget))
 
-    var obj = { IsIncrease: true, BudgetPrice: Budget, Title: "معاونت", MoavenatId: ID, DateCreated: today, TimeCreated: CurrentTime(), UserIncreaserId: _spPageContextInfo.userId }
+    var obj = {
+        dsc: " مقدار " + Budget + " به " + obj.MoavenatTitle + " واریز شد ",
+        IsIncrease: true,
+        BudgetPrice: Budget,
+        Title: "معاونت",
+        MoavenatId: obj.MoavenatId,
+        DateCreated: today,
+        TimeCreated: CurrentTime(),
+        UserIncreaserId: _spPageContextInfo.userId
+    }
     var createDiscount_BudgetIncrease = await create_Record(obj, "Discount_BudgetIncrease")
 
 
 
 
-    Obj_Discount_Moavenat.ID = ID
+    Obj_Discount_Moavenat.ID =  obj.MoavenatId
     var get_Discount_Moavenat = await get_RecordByID(Obj_Discount_Moavenat)
 
     var price = get_Discount_Moavenat.CurrentBudget + Budget
-    var update_Discount_Moavenat = await update_Record(ID, { CurrentBudget: price }, "Discount_Moavenat")
+    var update_Discount_Moavenat = await update_Record( obj.MoavenatId, { CurrentBudget: price }, "Discount_Moavenat")
 
 
     var MoavenatTakhsisBudget = await ShowMoavenatTakhsisBudget();
@@ -435,28 +796,46 @@ async function IncreseShoabBudget(obj) {
     var Budget = $("#takhsisBudget input[name=Budget]").val();
     Budget = parseInt(removeComma(Budget))
 
-    var obj1 = {
-        IsIncrease: false, BudgetPrice: Budget, Title: "شعبه", MoavenatId: obj.MoavenatId,
-        DateCreated: today, TimeCreated: CurrentTime(), UserIncreaserId: _spPageContextInfo.userId
-    }
+    Obj_Discount_ServerBranch.ID = obj.ServerBranchId
+    var get_Discount_ServerBranch = await get_RecordByID(Obj_Discount_ServerBranch)
 
+    Obj_Discount_Moavenat.ID = obj.MoavenatId
+    var get_Discount_Moavenat = await get_RecordByID(Obj_Discount_Moavenat)
+
+    var dsc = " مقدار " + Budget + " از " + get_Discount_Moavenat.Title + " به " + get_Discount_ServerBranch.Title + " واریز شد  "
+    console.log(dsc)
+    var obj1 = {
+        dsc: dsc,
+        IsIncrease: false,
+        BudgetPrice: Budget,
+        Title: "شعبه",
+        MoavenatId: obj.MoavenatId,
+        DateCreated: today,
+        TimeCreated: CurrentTime(),
+        UserIncreaserId: _spPageContextInfo.userId
+    }
+    var dsc = " مقدار " + Budget + " از " + get_Discount_Moavenat.Title + " به " + get_Discount_ServerBranch.Title + " واریز شد  "
+    console.log(dsc)
     var obj2 = {
-        IsIncrease: true, BudgetPrice: Budget, Title: "شعبه", ServerBranchId: obj.ServerBranchId,
-        DateCreated: today, TimeCreated: CurrentTime(), UserIncreaserId: _spPageContextInfo.userId
+        dsc: dsc,
+        IsIncrease: true,
+        BudgetPrice: Budget,
+        Title: "شعبه",
+        ServerBranchId: obj.ServerBranchId,
+        DateCreated: today, TimeCreated: CurrentTime(),
+        UserIncreaserId: _spPageContextInfo.userId
     }
 
     var createDiscount_BudgetIncrease1 = await create_Record(obj1, "Discount_BudgetIncrease")
     var createDiscount_BudgetIncrease2 = await create_Record(obj2, "Discount_BudgetIncrease")
 
     /*-----------ویرایش موجودی شعبه----------------- */
-    Obj_Discount_ServerBranch.ID = obj.ServerBranchId
-    var get_Discount_ServerBranch = await get_RecordByID(Obj_Discount_ServerBranch)
+
 
     var price = get_Discount_ServerBranch.CurrentBudget + Budget
     var update_Discount_ServerBranch = await update_Record(obj.ServerBranchId, { CurrentBudget: price }, "Discount_ServerBranch")
     /*---------------ویرایش موجودی معاونت------------- */
-    Obj_Discount_Moavenat.ID = obj.MoavenatId
-    var get_Discount_Moavenat = await get_RecordByID(Obj_Discount_Moavenat)
+
 
     var price = get_Discount_Moavenat.CurrentBudget - Budget
     var update_Discount_Moavenat = await update_Record(obj.MoavenatId, { CurrentBudget: price }, "Discount_Moavenat")
@@ -509,6 +888,58 @@ async function DecreseShoabBudget(obj) {
     $("#window2").data("kendoWindow").close();
     $.LoadingOverlay("hide");
 }
+/*افزایش و کاهش بودجه بازگانی */
+async function IncDecModirBaziabyBudget(obj) {
+
+    $('#btnSave').prop('disabled', true);
+    $.LoadingOverlay("show");
+
+    var Budget = $("#takhsisBudget input[name=Budget]").val();
+    Budget = parseInt(removeComma(Budget))
+
+    var objBudgetIncrease = {
+        dsc:" مقدار "+Budget+" توسط "+_spPageContextInfo.userLoginName+" به "+obj.MarketingDirectorTitle +" اضافه شد ",
+        IsIncrease: true,
+        BudgetPrice: Budget,
+        Title: "مدیر  بازاریبابی",
+        MarketingDirectorId: obj.MarketingDirectorId,
+        DateCreated: today,
+        TimeCreated: CurrentTime(),
+        UserIncreaserId: _spPageContextInfo.userId
+    }
+    // var createDiscount_BudgetIncrease = await create_Record(obj, "Discount_BudgetIncrease")
+
+    Obj_MarketingDirector.ID = obj.MarketingDirectorId
+    // var MarketingDirector = await get_RecordByID(Obj_MarketingDirector)
+
+
+    var results = await Promise.all([
+        create_Record(objBudgetIncrease, "Discount_BudgetIncrease"),
+        get_RecordByID(Obj_MarketingDirector)
+    ]);
+
+
+    var MarketingDirector = results[1]
+
+    if (obj.IncDec == 'Inc') {
+        var price = MarketingDirector.CurrentBudget + Budget
+    }
+    else if (obj.IncDec == 'Dec') {
+        var price = MarketingDirector.CurrentBudget - Budget
+    }
+
+    var update_Discount_Moavenat = await update_Record(obj.MarketingDirectorId, { CurrentBudget: price }, "Discount_MarketingDirector")
+
+
+    ShowModirBaziabyTakhsisBudget()
+    // var MoavenatTakhsisBudget = await ShowMoavenatTakhsisBudget();
+    $('#btnSave').prop('disabled', false);
+    $("#window2").data("kendoWindow").close();
+    $.LoadingOverlay("hide");
+
+
+
+}
 /*----------------- */
 async function CalculateBudget(filter) {
 
@@ -526,6 +957,13 @@ async function CalculateBudget(filter) {
         }
         resolve(Price)
     })
+}
+function BudgetDarsadToShoab(thiss,obj){
+   var darsad= thiss.value
+  var MoavenatCurrentBudget= obj.MoavenatCurrentBudget
+var res=((darsad*MoavenatCurrentBudget)/100).toFixed(0)
+   $("#takhsisBudget input[name='Budget']").val(res)
+
 }
 // function changeInputToThreeDigit(thiss) {
 //     var x=removeComma(thiss.value)
@@ -558,13 +996,13 @@ async function showDetail(ID_IServerBranch) {
     Obj_Discount_ServerBranch.Is_Increase = false
     Obj_Discount_ServerBranch.ID = ID_IServerBranch
     var Discount_ServerBranch = await get_RecordByID(Obj_Discount_ServerBranch)
-    debugger
+
 
     if (Discount_ServerBranch.Moavenat.Id != undefined) {
         Obj_Discount_Moavenat.ID = Discount_ServerBranch.Moavenat.Id
         var Discount_Moavenat = await get_RecordByID(Obj_Discount_Moavenat)
     }
-    debugger
+
 
     var table = "<table class='table'>"
     table += "<tr>" +
@@ -584,7 +1022,7 @@ async function showDetail(ID_IServerBranch) {
         else {
             var res = "<select  class='chosen'><option></option>"
         }
-       
+
         for (let index2 = 0; index2 < users.length; index2++) {
             var res2 = Confirmss.find(x =>
                 x.Confirmator.Id ==
@@ -604,12 +1042,12 @@ async function showDetail(ID_IServerBranch) {
         }
         if (Discount_ConfirmRows[index].Row == 2) {
             if (Discount_ServerBranch.Moavenat.Id != undefined) {
-                 res +=  "<option selected value='" + Discount_Moavenat.User.Id + "'>" + splitString(Discount_Moavenat.User.Title, "(")[0] + "</option>"
+                res += "<option selected value='" + Discount_Moavenat.User.Id + "'>" + splitString(Discount_Moavenat.User.Title, "(")[0] + "</option>"
             }
             else {
-                
+
             }
-            
+
         }
         res += "</select>"
 
@@ -637,8 +1075,6 @@ function ShowMessage(arrayMessage) {
     $('#btnSave').prop('disabled', false);
 }
 //--------------------------------------------------------------------CRUD
-
-
 function Get_Confirm(filter) {
     return new Promise(resolve => {
         $pnp.sp.web.lists.
@@ -801,8 +1237,6 @@ function update_Moavenat(Record) {
         });
     });
 }
-
-
 //-------------------------------------
 function OpenDialog(windows) {
     var myWindow = $(windows),
@@ -822,9 +1256,7 @@ function OpenDialog(windows) {
         }
     }).data("kendoWindow").center().open();
 }
-
 //--------------------------------------------------------------------web services
-
 function serviceDiscount(Factor) {
     return new Promise(resolve => {
         var serviceURL = "https://portal.golrang.com/_vti_bin/SPService.svc/DiscountData"

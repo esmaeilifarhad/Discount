@@ -63,6 +63,8 @@
 
     <script src="https://portal.golrang.com/services/discount/SiteAssets/JS/Discount_Request.js" type="text/javascript"
         language="javascript"></script>
+        <script src="https://portal.golrang.com/services/discount/SiteAssets/JS/Discount_Models.js" type="text/javascript"
+        language="javascript"></script>
     <link href="https://portal.golrang.com/services/discount/SiteAssets/CSS/Discount_Request.css" rel="stylesheet"
         type="text/css" />
 
@@ -81,7 +83,13 @@
     <script src="https://portal.golrang.com/ictrequests/SiteAssets/JS/sweetalert2@9.js"></script>
     <!-- https://sweetalert2.github.io/#examples -->
 
-
+<style>
+    #LinkRequest button{
+        border-radius: 20px 0px 0px 20px;
+    margin-top: 2px;
+    font-size: 10px;
+    }
+</style>
 
 </head>
 
@@ -91,20 +99,27 @@
 
 
         <div class="row">
-            <div class="col-sm-4" style="padding-right: 0px; padding-left: 0px;">
+            <div id="LinkRequest" class="btn-group-toggle" style="right:-5px;width: 25px;position: fixed;font-family:'B Nazanin'">
+                 <button  type="button" onclick='myRequest()' class="btn btn-primary">درخواست های من</button>
+                 <a href="https://portal.golrang.com/services/discount/Pages/Discount_CreateConfirm.aspx" target="_blank"> <button type="button" class="btn btn-info">تاییدات</button></a>
+                 <a href="#" target="_blank"> <button type="button" class="btn btn-primary">تاریخچه بودجه</button></a>
+
+                
+             </div>
+            <div class="col-sm-7" style="padding-right: 0px; padding-left: 0px;">
                 <div id="ShowUser">
 
                 </div>
             </div>
-            <div class="col-sm-4">
+            <div class="col-sm-5">
 
                 <table class="table">
                     <tr>
                         <td> شماره فاکتور  </td>
                     </tr>
                     <tr>
-                        <td><input style="color: black;" type="number" name="factorSearch" placeholder="298019050"
-                                value="298019006" /></td>
+                        <td><input style="color: black;" type="number" name="factorSearch" placeholder="298019036"
+                                value="298019036" /></td>
                             </tr>
                             <tr>
                         <td><input style="background-color:  #1383d6;" type="button" value="جستجو"
@@ -112,33 +127,6 @@
 
                     </tr>
                 </table>
-
-            </div>
-            <div class="col-sm-4">
-                <table class="table">
-                    <tr>
-                        <td colspan="2"> درخواست افزایش بودجه </td>
-                    </tr>
-                    <tr>
-                        <td>مقدار به تومان  </td>
-                        <td><input style="color: black;" type="number" name="factorSearch" placeholder="تومان" /></td>
-
-                    </tr>
-                    <tr>
-                        <td>توضیحات  </td>
-                        <td><textarea name='comment' form='usrform' placeholder='توضیحات ...'></textarea></td>
-                    </tr>
-                    <tr>
-                        <td><input style="background-color:  #1383d6;" type="button" value="ثبت درخواست"
-                                onclick="FindFactor()" /></td>
-                        <td><input style="background-color:  #59b351;" type="button" value="درخواست ها من "
-                                onclick="FindFactor()" /></td>
-
-                    </tr>
-                </table>
-
-
-
 
             </div>
         </div>

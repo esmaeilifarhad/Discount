@@ -1,4 +1,10 @@
-  .w3-card, .w3-card-2 {
+ 
+
+ .container {
+  max-width: 1270px!important;
+ }
+
+ .w3-card, .w3-card-2 {
    box-shadow: none 
 }  
 

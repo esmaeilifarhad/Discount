@@ -57,6 +57,8 @@
 
     <script src="https://portal.golrang.com/services/discount/SiteAssets/JS/Discount_Task.js" type="text/javascript"
         language="javascript"></script>
+    <script src="https://portal.golrang.com/services/discount/SiteAssets/JS/Discount_Models.js" type="text/javascript"
+        language="javascript"></script>
     <link href="https://portal.golrang.com/services/discount/SiteAssets/CSS/Discount_Task.css" rel="stylesheet"
         type="text/css" />
 
@@ -92,16 +94,17 @@
             <!-- <li class="active"><a data-toggle="tab" href="#home">فاکتور</a></li> -->
             <li><a data-toggle="tab" href="#home">فاکتور</a></li>
             <li><a data-toggle="tab" href="#menu1">تاریخچه</a></li>
-            <!-- <li><a data-toggle="tab" href="#menu2">Menu 2</a></li> -->
+            <li><a data-toggle="tab" href="#menu2">نمایش وضعیت فاکتور</a></li>
         </ul>
 
         <div class="tab-content" style="text-align: center;    border: 1px solid black;">
             <div id="home" class="tab-pane fade in active" style="background-color: antiquewhite;padding: 6px;">
+
                 <h3>نمایش شعبه</h3>
                 <div id="branch1" style="background-color:  #a9ce6e;"></div>
                 <h3>نمایش فاکتور</h3>
                 <div id="head1" style="background-color: azure;"></div>
-                
+
                 <div id="Detail1"></div>
                 <h3>نتیجه گیری</h3>
                 <div id="Decision1" style="background-color: #a9ce6e;"></div>
@@ -110,10 +113,11 @@
                 <h3>تاریخچه اقدامات</h3>
                 <div id="Log1"></div>
             </div>
-            <!-- <div id="menu2" class="tab-pane fade">
-                <h3>Menu 2</h3>
-                <p>Some content in menu 2.</p>
-            </div> -->
+            <div id="menu2" class="tab-pane fade">
+                <h3>نمایش وضعیت فاکتور </h3>
+                <div id="VaziatFactor"></div>
+            </div>
+
         </div>
     </div>
 </body>

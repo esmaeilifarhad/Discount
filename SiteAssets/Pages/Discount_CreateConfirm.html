@@ -64,6 +64,10 @@
 
     <script src="https://portal.golrang.com/services/discount/SiteAssets/JS/Discount_CreateConfirm.js"
         type="text/javascript" language="javascript"></script>
+
+    <script src="https://portal.golrang.com/services/discount/SiteAssets/JS/Discount_Models.js" type="text/javascript"
+        language="javascript"></script>
+
     <link href="https://portal.golrang.com/services/discount/SiteAssets/CSS/Discount_CreateConfirm.css" rel="stylesheet"
         type="text/css" />
 
@@ -96,13 +100,23 @@
                 <a class="nav-link active" onclick="ShowBranch()" data-toggle="tab" href="#home">تعریف تاییدات </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" onclick="ShowMoavenat()"  data-toggle="tab" href="#menu1">تخصیص معاونت به شعبه</a>
+                <a class="nav-link" onclick="ShowMoavenat()" data-toggle="tab" href="#menu1">تخصیص معاونت به شعبه</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" onclick="ShowMoavenatTakhsisBudget()" data-toggle="tab" href="#menu2">تخصیص بودجه به معاونت توسط مدیر عامل</a>
+                <a class="nav-link" onclick="ShowMoavenatTakhsisBudget()" data-toggle="tab" href="#menu2">تخصیص بودجه به
+                    معاونت توسط مدیر عامل</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" onclick="ShowShoabTakhsisBudget()" data-toggle="tab" href="#menu3">تخصیص بودجه به شعب توسط معاونت</a>
+                <a class="nav-link" onclick="ShowShoabTakhsisBudget()" data-toggle="tab" href="#menu3">تخصیص بودجه به
+                    شعب توسط معاونت</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="ShowBrandModirBaziaby()" data-toggle="tab" href="#menu4">تخصیص مدیر
+                    بازاریابی به برندها</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="ShowModirBaziabyTakhsisBudget()" data-toggle="tab" href="#menu5">تخصیص
+                    بودجه به مدیر بازاریابی </a>
             </li>
         </ul>
 
@@ -127,18 +141,39 @@
                     <div class="col-sm-12">
                         <div id="showMoavenatTakhsis"></div>
                     </div>
+                    <div class="col-sm-12">
+                        <div id="showMoavenatTakhsisLog"></div>
+                    </div>
                 </div>
             </div>
             <div class="tab-pane container fade" id="menu3">
                 <div class="row">
                     <div class="col-sm-12">
                         <div id="showShoabTakhsis"></div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane container fade" id="menu4">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div id="showBrandModirBaziaby"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane container fade" id="menu5">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div id="ShowModirBaziabyTakhsisBudget"></div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div id="showModirBaziabyTakhsisLog"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        
+
     </div>
 
     <!-- Modal    افزایش بودجه -->
@@ -187,7 +222,7 @@
             </div> -->
         </div>
     </div>
-    
+
     <div id="window2" style="display:none">
         <ul class="nav nav-tabs">
             <!-- <li class="active"><a data-toggle="tab" href="#home">فاکتور</a></li> -->
@@ -199,13 +234,19 @@
         <div class="tab-content" style="border: 1px solid black;">
             <div id="B1" class="tab-pane fade in active" style="background-color: antiquewhite;padding: 6px;">
                 <h3>تخصیص بودجه</h3>
-                <div id="takhsisBudget" ></div>
+                <div id="takhsisBudget"></div>
             </div>
             <div id="B2" class="tab-pane fade" style="background-color: antiquewhite;padding: 6px;">
                 <h3>تاریخچه</h3>
-                <div id="takhsisBudget2" ></div>
+                <div id="takhsisBudget2"></div>
             </div>
         </div>
+    </div>
+    <div id="window3" style="display:none">
+
+
+        <h3>تاریخچه</h3>
+        <div id="ShowShoabBudgetLog"></div>
     </div>
 
 </body>
