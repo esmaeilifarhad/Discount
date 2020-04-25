@@ -63,26 +63,46 @@ async function showCartabl() {
     //----------------------------------------------
 
 
+    // var MyLinks = ""
+
+    // MyLinks += "<div class='animated swing infinite' style='height: 50px;  animation-duration: 2.5s; text-decoration: none;'>"
+    // for (let index = 0; index < Links.length; index++) {
+
+    //     if (Links[index].BackgroundImageLocation == null || Links[index].LinkLocation == null) continue
+
+    //     MyLinks += "<a target='_blank' class='navbar-brand' href='" + Links[index].LinkLocation.Url + "'>"
+    //     MyLinks += "<img style='margin: 0 auto;max-width: 90px;' class='img-circle' src='" + Links[index].BackgroundImageLocation.Url + "' height='65' alt='mdb logo'>"
+
+    //     MyLinks += "<p   style='background-color: white;padding: 5px;border-radius: 5px;'>"
+    //     MyLinks += "<span >" + Links[index].Title + "</span>"
+      
+    //     MyLinks += "</p>"
+    //     MyLinks += "</a>"
+
+    // }
+    // MyLinks += "</div>"
+
     var MyLinks = ""
 
-    MyLinks += "<div class='animated swing infinite' style='height: 50px;  animation-duration: 2.5s; text-decoration: none;'>"
+
     for (let index = 0; index < Links.length; index++) {
 
         if (Links[index].BackgroundImageLocation == null || Links[index].LinkLocation == null) continue
 
-        MyLinks += "<a target='_blank' class='navbar-brand' href='" + Links[index].LinkLocation.Url + "'>"
-        MyLinks += "<img style='margin: 0 auto;max-width: 90px;' class='img-circle' src='" + Links[index].BackgroundImageLocation.Url + "' height='65' alt='mdb logo'>"
-
-        MyLinks += "<p   style='background-color: white;padding: 5px;border-radius: 5px;'>"
-        MyLinks += "<span >" + Links[index].Title + "</span>"
+        MyLinks += "<a target='_blank' class='navbar-brand' href='" + Links[index].LinkLocation.Url + "'>"+
+        "<div style='margin-left:5px'>"+
+         
+         "<img  src='" + Links[index].BackgroundImageLocation.Url + "' height='65' alt='mdb logo' class='img-circle'/>"+
+          "  <p>"+Links[index].Title+"</p>"+
+    
+     " </div></a>"
       
-        MyLinks += "</p>"
-        MyLinks += "</a>"
 
     }
-    MyLinks += "</div>"
 
-    $("#showLinks .navbar").append(MyLinks);
+
+
+    $("#showLinks").append(MyLinks);
     //console.log(MyLinks)
 
 

@@ -8,7 +8,7 @@ var Obj_Discount_Log = {
 }
 const Obj_Discount_ServerBranch = {
     NameList: "Discount_ServerBranch",
-    Select: "User/Id,User/Title,Moavenat/Title,Moavenat/Id,Id,Title,IP_Server,TitleBranch,DataBaseName,CurrentBudget",
+    Select: "User/Id,User/Title,Moavenat/Title,Moavenat/Id,Id,Title,IP_Server,TitleBranch,DataBaseName,CurrentBudget,IP_Server",
     Filter: "",
     Expand: "Moavenat,User",
     OrderBy: "Moavenat/Title",
@@ -33,7 +33,7 @@ const Obj_Discount_Confirm = {
 const Obj_Discount_Master = {
     NameList: "Discount_Master",
     Select: "ServerBranch/Id,ServerBranch/Title,User/Id,User/Title,StatusWorkFlow/Id,StatusWorkFlow/Title," +
-        "Id,Title,SaleDocCode,OrderDate,TitleUser,TitleUser,CustomerCode,DateCreated,TimeCreated,SendNotification",
+        "Id,Title,SaleDocCode,OrderDate,TitleUser,TitleUser,CustomerCode,DateCreated,TimeCreated,SendNotification,SaleDocId,IdSaleDocsMarketingDiscounts",
     Filter: "",
     Expand: "User,ServerBranch,StatusWorkFlow",
     OrderBy: "Id",
@@ -43,7 +43,7 @@ const Obj_Discount_Detail = {
     NameList: "Discount_Detail",
     Select: "CurrentConfirm/Id,CurrentConfirm/Title,StatusWorkFlow/Id,StatusWorkFlow/Title,ServerBranch/CurrentBudget,ServerBranch/Title,ServerBranch/Id,MasterId/IdUser,MasterId/SaleDocCode,MasterId/Id,MasterId/Title," +
         "MasterId/Id,MasterId/Title,MasterId/SaleDocCode,MasterId/OrderDate,MasterId/FinalDate,MasterId/CustomerCode," +
-        "MasterId/CID,MasterId/TitleUser," +
+        "MasterId/CID,MasterId/TitleUser,MasterId/SaleDocId," +
         "Id,Title,ProductName,DiscountVal," +
         "FinalPriceWithoutTax,FinalPriceWithTax,DiscountPrice,BrandId,BrandDesc,VDiscount_Price,GDiscount_Price,CDiscount_Price,Step," +
         "TaxesPercent," +
@@ -56,7 +56,7 @@ const Obj_Discount_Detail = {
         "SuppName," +
         "SuppCode,ProductName,SaleDocTypeDesc," +
         "FinalBox,DiscountVal," +
-        "Id,Title,DiscountVal,MasterId/DateCreated,MasterId/TimeCreated,Famount,UnitPrice,lastDsc",
+        "Id,Title,DiscountVal,MasterId/DateCreated,MasterId/TimeCreated,Famount,UnitPrice,lastDsc,SaledocItemId",
     Filter: "",
     Expand: "MasterId,ServerBranch,StatusWorkFlow,CurrentConfirm",
     OrderBy: "Id",

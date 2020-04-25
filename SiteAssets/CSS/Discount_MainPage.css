@@ -64,11 +64,13 @@
 }
 
 
-
-img:hover {
+#showLinks div :hover{
+ background-color: #919191;
+}
+/* img:hover {
   animation: shake 0.5s;
   animation-iteration-count: infinite;
-}
+} */
 
 .myShake {
   animation: shake 10s;
@@ -96,10 +98,10 @@ border-radius: 26px;
   display: none;
 }
 /* #MSOZoneCell_WebPartWPQ1 */
-#DeltaPlaceHolderMain{
-/* background: url(https://portal.golrang.com/PublishingImages/Feature-Hub-Copy-compressor.png)no-repeat ; */
+/* #DeltaPlaceHolderMain{
+ background: url(https://portal.golrang.com/PublishingImages/Feature-Hub-Copy-compressor.png)no-repeat ; 
 background: url(https://portal.golrang.com/PublishingImages/ima232ges.jpg) ;
-}
+} */
 .ms-webpart-chrome-fullWidth{
   background-color: none!important;
 }
@@ -125,9 +127,9 @@ background-image: linear-gradient(to right,#291c1c, #30bae4);
 {
   z-index:150 !important
 }
-.styleLog{
-  background-image: linear-gradient(to bottom right, #f7f4f4, #940909);
-  border-radius: 29px;
+.ms-webpart-zone {
+  background-image: linear-gradient(to  right, rgba(255,255,255,0),#dbdbdb);
+ 
 }
 .styleDecision{
   background-image: linear-gradient(to bottom right, #d8ffff, #0072c6);

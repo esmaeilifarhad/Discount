@@ -41,7 +41,7 @@ $(document).ready(function () {
     ShowUserInfo();
 
     //showFormRequest();
-   
+
 
 });
 //-----------------------------------------------------------
@@ -177,8 +177,8 @@ async function ShowUserInfo() {
 
 
     _ServiceObj = { IP_Server: Discount_ServerBranch[0].IP_Server, DB: Discount_ServerBranch[0].DataBaseName, ServerBranchId: Discount_ServerBranch[0].Id }
-    InsertToInsertSaleDocsMarketingDiscounts()
-  
+
+
     var table = "<table class='table'>"
     table += "<tr class='rows'>"
     table += "<td class='onvan'>نام</td><td>" + Discount_ServerBranch[0].User.Title + "</td>"
@@ -346,9 +346,9 @@ async function FindFactor() {
 
     var Factor = $("input[name='factorSearch']").val();
     _ServiceObj.Factor = Factor
-    _ServiceObj.typeWebService="findFactor"
+    _ServiceObj.typeWebService = "findFactor"
     var Factor = await serviceDiscount(_ServiceObj);
-
+    
     Factor = Factor.lstInvoice
     _Factor = Factor
     if (Factor.length == 0) {
@@ -464,11 +464,14 @@ async function SaveFactor() {
             // IDTypeTakhfif: TypeTakhfif,
             ServerBranchId: _ServiceObj.ServerBranchId,
             TimeCreated: CurrentTime(),
-            
-            SaleDocId:parseFloat(_Factor[0].SaleDocId)
+
+            SaleDocId: parseFloat(_Factor[0].SaleDocId)
         }
 
-
+        
+        /* ثبت در دیتابیس پپ اگر ارور داد و سرور قطع بود دیگر بقیه کد ها اجرا نشود*/
+        var result = await InsertToInsertSaleDocsMarketingDiscounts(0, obj)
+        
         /*-----------ویرایش موجودی شعبه----------------- */
         Obj_Discount_ServerBranch.ID = _ServiceObj.ServerBranchId
         var get_Discount_ServerBranch = await get_RecordByID(Obj_Discount_ServerBranch)
@@ -476,14 +479,28 @@ async function SaveFactor() {
         var price = get_Discount_ServerBranch.CurrentBudget - Math.round(_sum)
         var update_Discount_ServerBranch = await update_Record(obj.ServerBranchId, { CurrentBudget: price }, "Discount_ServerBranch")
         /*-----------create Master----------------- */
+        
         var Master = await create_Record(obj, "Discount_Master")
+
         var MasterId = Master.data.ID
+        
+        /* کد مستر آیدی را دوباره ویرای میکنیم*/
+        var result = await InsertToInsertSaleDocsMarketingDiscounts(MasterId, obj)
+        
+        var IdSaleDocsMarketingDiscounts = parseInt(result.lstInvoice[0].IdSaleDocsMarketingDiscounts);
+        var CreatePromise = []
+        CreatePromise.push(update_Record(MasterId,
+            {
+                IdSaleDocsMarketingDiscounts: result.lstInvoice[0].IdSaleDocsMarketingDiscounts,
+            },
+            "Discount_Master"))
+        var results = await Promise.all(CreatePromise);
 
         //----detail
 
         for (let index = 0; index < _Factor.length; index++) {
 
-            var obj = {
+            var objDetail = {
                 Title: "Record2",
                 MasterIdId: MasterId,
                 Productcode: _Factor[index].Productcode,
@@ -514,9 +531,10 @@ async function SaveFactor() {
                 TypeTakhfifId: 1,/*در تعهد شعبه */
                 StatusWorkFlowId: 4,/*در گردش*/
                 CurrentConfirmId: Discount_Confirm[0].Confirmator.Id,
+                SaledocItemId: _Factor[index].SaledocItemId
             }
 
-            var Detail = await create_Record(obj, "Discount_Detail")
+            var Detail = await create_Record(objDetail, "Discount_Detail")
             if (Detail == "error") {
                 statusSave = false
             }
@@ -526,6 +544,7 @@ async function SaveFactor() {
 
 
         }
+
 
         if (statusSave == true) {
             ShowUserInfo();
@@ -562,7 +581,7 @@ function effectTotalFactor() {
         $(this).find(".MeghdarTakhfif").empty()
         $(this).find(".MeghdarTakhfif").append("<span>" + SeparateThreeDigits(Math.round((x * Famount * UnitPrice) / 100)) + "</span>")
         //$(this).val(x)
-        
+
     })
 
 }
@@ -620,23 +639,23 @@ async function myRequest() {
     var Discount_Master = results[0]
     console.log(Discount_Master)
     var table = "<table class='table-bordered table'>"
-    table += "<tr><th>شماره فاکتور</th>"+
-    "<th>تاریخ</th>"+
-    "<th>ساعت</th>"+
-    "<th>وضعیت</th>"+
-    "<th>شعبه</th>"+
-    "<th>کد مشتری</th>"+
-    "</tr>"
+    table += "<tr><th>شماره فاکتور</th>" +
+        "<th>تاریخ</th>" +
+        "<th>ساعت</th>" +
+        "<th>وضعیت</th>" +
+        "<th>شعبه</th>" +
+        "<th>کد مشتری</th>" +
+        "</tr>"
     for (let index = 0; index < Discount_Master.length; index++) {
         table += "<tr>"
-        table += "<td>" + Discount_Master[index].SaleDocCode + "</td>"+
-        "<td>" +foramtDate(Discount_Master[index].DateCreated) + "</td>"+
-        "<td>" +foramtTime(Discount_Master[index].TimeCreated) + "</td>"+
-        "<td>"+Discount_Master[index].StatusWorkFlow.Title+ "</td>"+
-        "<td>"+Discount_Master[index].ServerBranch.Title+ "</td>"+
-        "<td>"+Discount_Master[index].CustomerCode+ "</td>"
-        
-        
+        table += "<td>" + Discount_Master[index].SaleDocCode + "</td>" +
+            "<td>" + foramtDate(Discount_Master[index].DateCreated) + "</td>" +
+            "<td>" + foramtTime(Discount_Master[index].TimeCreated) + "</td>" +
+            "<td>" + Discount_Master[index].StatusWorkFlow.Title + "</td>" +
+            "<td>" + Discount_Master[index].ServerBranch.Title + "</td>" +
+            "<td>" + Discount_Master[index].CustomerCode + "</td>"
+
+
 
         table += "</tr>"
     }
@@ -646,26 +665,32 @@ async function myRequest() {
     $("#ShowFactorDetail").append(table)
     $.LoadingOverlay("hide");
 }
-async function InsertToInsertSaleDocsMarketingDiscounts(){
-    
-    _ServiceObj.typeWebService="InsertSaleDocsMarketingDiscounts"
-    _ServiceObj.SaleDocId="200128.671"
-    _ServiceObj.SqlQuery="insert into SaleDocsMarketingDiscounts"+
-                "(SaleDocId,PortalStatus)"+
-                "select "+ _ServiceObj.SaleDocId + ","+5+
-                " SELECT SCOPE_IDENTITY() AS NewID";
-                debugger
+async function InsertToInsertSaleDocsMarketingDiscounts(MasterId, objMaster) {
+    _ServiceObj.typeWebService = "InsertSaleDocsMarketingDiscounts"
+
+
+    _ServiceObj.SqlQuery = "if((select count(*) from SaleDocsMarketingDiscounts where  SaleDocId=" + objMaster.SaleDocId + ")>0)" +
+        " begin" +
+        " update SaleDocsMarketingDiscounts" +
+        " set PortalStatus=" + objMaster.StatusWorkFlowId + ",PortalId=" + MasterId + "" +
+        " where SaleDocId=" + objMaster.SaleDocId + "" +
+        " select SaleDocsMarketingDiscountId as NewID from SaleDocsMarketingDiscounts where SaleDocId=" + objMaster.SaleDocId + "" +
+        " end " +
+        " else " +
+        " begin " +
+        " insert into SaleDocsMarketingDiscounts " +
+        " (SaleDocId,PortalStatus,PortalId,Dsc) " +
+        " select " + objMaster.SaleDocId + "," + objMaster.StatusWorkFlowId + "," + MasterId + ",'...'" +
+        " SELECT SCOPE_IDENTITY() AS NewID " +
+        " end ";
+
     var Factor = await serviceDiscount(_ServiceObj);
-    console.log(Factor.lstInvoice[0].IdSaleDocsMarketingDiscounts)
-var IdSaleDocsMarketingDiscounts=parseInt();
-    var CreatePromise = []
-    CreatePromise.push(update_Record(115,
-        {
-            IdSaleDocsMarketingDiscounts:Factor.lstInvoice[0].IdSaleDocsMarketingDiscounts,
-        },
-        "Discount_Master"))
-        var results = await Promise.all(CreatePromise);
-    debugger
+    return new Promise(resolve => {
+        resolve(Factor)
+    })
+
+   
+
 }
 //-------------کاربران ثبت کننده تخفیف    223---------------------- Users in Group
 function IsUserInGroup(id) {
@@ -689,18 +714,20 @@ function IsUserInGroup(id) {
 }
 //--------------------------------------------------------------------web service
 function serviceDiscount(_ServiceObj) {
-
+    
     return new Promise(resolve => {
         var serviceURL = "https://portal.golrang.com/_vti_bin/SPService.svc/DiscountData"
         // var request = { SaleDocCode: Factor, IpServer: "192.168.10.201", DB: "ISS" }
-       // var typeWebService="findFactor"
-        var request = { SaleDocCode: _ServiceObj.Factor, IpServer: _ServiceObj.IP_Server,
-             DB: _ServiceObj.DB,
-             typeWebService:_ServiceObj.typeWebService,
-             SaleDocId:_ServiceObj.SaleDocId,
-             SqlQuery:_ServiceObj.SqlQuery
-             }
-        
+        // var typeWebService="findFactor"
+        var request = {
+            SaleDocCode: _ServiceObj.Factor,
+            IpServer: _ServiceObj.IP_Server,
+            DB: _ServiceObj.DB,
+            typeWebService: _ServiceObj.typeWebService,
+            SaleDocId: _ServiceObj.SaleDocCode,
+            SqlQuery: _ServiceObj.SqlQuery
+        }
+
         // {"CID":"50","Date":"980919","PortalReqHeaderID":"984"}
         $.ajax({
             type: "POST",
@@ -713,12 +740,12 @@ function serviceDiscount(_ServiceObj) {
             data: JSON.stringify(request),
             //processData: false,
             success: function (data) {
-                debugger
+
                 resolve(data);
 
             },
             error: function (a) {
-                debugger
+
                 console.log(a);
             }
         });

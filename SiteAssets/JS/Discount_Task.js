@@ -1,6 +1,7 @@
 var Obj_Initial = {}
 var _Factor = [];
 var _arrayMessage = [];
+var _ServiceObj = {}
 // var _CurrentBudget;
 
 //-----------------------------------
@@ -283,11 +284,10 @@ async function ConfirmIncreaseBudget(obj) {
     var MarketingDirectorId = 0
     var result = ""
     var count = $(".tblIncreaseBudget  tr").length
-    if(count==1)
-    {
+    if (count == 1) {
         $.LoadingOverlay("hide");
-        debugger
-        showAlert("احتراما موردی برای تایید وجود ندارد",4000,'info')
+
+        showAlert("احتراما موردی برای تایید وجود ندارد", 4000, 'info')
         return
 
     }
@@ -367,7 +367,7 @@ async function ConfirmIncreaseBudget(obj) {
         i += 1
 
         if (i == count) {
-            debugger
+
             var results = await Promise.all(CreatePromise);
             showAlert("با موفقیت اعمال شد")
             $.LoadingOverlay("hide");
@@ -533,6 +533,13 @@ async function save(obj) {
     utilityObj.result = $("input[name='decide']:checked").val()
     // utilityObj.TypeTakhfif = $("#DarTaahod option:selected").val();
 
+    //--------------------------------------
+    var resVal = checkValidation(utilityObj)
+    if (_arrayMessage.length > 0) {
+        ShowMessage()
+        return
+    }
+    //----------------------------------------
 
     Obj_Discount_ServerBranch.OrderBy = "CurrentBudget"
     Obj_Discount_ServerBranch.Is_Increase = false
@@ -553,18 +560,19 @@ async function save(obj) {
     Obj_WorkFlow.ID = utilityObj.result
     // var Discount_ServerBranch = await get_RecordByID(Obj_Discount_ServerBranch)
 
-    //----------------------------------
-    var resVal = checkValidation(utilityObj)
-    if (_arrayMessage.length > 0) {
-        ShowMessage()
-        return
-    }
+    //---------------------------------
+    Obj_MarketingDirector.OrderBy = "Id"
+    Obj_MarketingDirector.Is_Increase = false
+    Obj_MarketingDirector.ID = obj.MarketingDirectorId
+    // var MarketingDirector = await get_RecordByID(Obj_MarketingDirector)
+
 
     var results = await Promise.all([
         get_RecordByID(Obj_Discount_ServerBranch),
         get_RecordByID(Obj_Discount_Master),
         get_Records(Obj_Discount_Detail),
         get_RecordByID(Obj_WorkFlow),
+        get_RecordByID(Obj_MarketingDirector)
     ]);
 
 
@@ -572,26 +580,28 @@ async function save(obj) {
     var Discount_Master = results[1]
     var Discount_Detail = results[2]
     var Discount_WorkFlow = results[3]
+    var MarketingDirector = results[4]
 
 
 
     Obj_WorkFlow.OrderBy = "Id"
     Obj_WorkFlow.Is_Increase = false
     Obj_WorkFlow.Filter = "(currentStep eq " + Discount_WorkFlow.nextStep + ")"
-    var Discount_WorkFlow_Next = await get_Records(Obj_WorkFlow)
+    // var Discount_WorkFlow_Next = await get_Records(Obj_WorkFlow)
 
 
     Obj_Discount_Confirm.OrderBy = "Id"
     Obj_Discount_Confirm.Is_Increase = false
     Obj_Discount_Confirm.Filter = "(ConfirmRow/Row eq " + Discount_WorkFlow.nextStep + ") and (ServerBranch/Id eq " + Discount_ServerBranch.Id + ")"
-    var Discount_Confirm = await get_Records(Obj_Discount_Confirm)
+    // var Discount_Confirm = await get_Records(Obj_Discount_Confirm)
 
+    var results = await Promise.all([
+        get_Records(Obj_WorkFlow),
+        get_Records(Obj_Discount_Confirm)
+    ]);
 
-    Obj_MarketingDirector.OrderBy = "Id"
-    Obj_MarketingDirector.Is_Increase = false
-    Obj_MarketingDirector.ID = obj.MarketingDirectorId
-    var MarketingDirector = await get_RecordByID(Obj_MarketingDirector)
-
+    var Discount_WorkFlow_Next = results[0]
+    var Discount_Confirm = results[1]
 
     //-------------------------------
     var OldSum = 0
@@ -601,7 +611,7 @@ async function save(obj) {
 
     }
     utilityObj.OldSum = OldSum
-    //------محاسبه جمع تخفیف ها
+    //----------------------------------------------------محاسبه جمع تخفیف ها
     var NewSum = 0
     $("#Detail1 table  .rows").each(function () {
         var DataId = parseInt($(this).attr("DataId"))
@@ -618,143 +628,212 @@ async function save(obj) {
         }
     })
     utilityObj.NewSum = NewSum
-
+    //----------------------------------------------------
     checkBudget(Discount_WorkFlow, Discount_ServerBranch, utilityObj, MarketingDirector)
 
 
 
     if (_arrayMessage.length > 0) {
         ShowMessage()
-
+        return
     }
-    else {
-        //--------------اگر بودجه کمتر بود پیغام میدهد
 
-        if (utilityObj.result == "1") {
-            if (Discount_ServerBranch.CurrentBudget < NewSum) {
+    //--------------اگر بودجه کمتر بود پیغام میدهد و کاربر در صورت تایید از این مرحله رد میشود
+
+    if (utilityObj.result == "1") {
+        if (Discount_ServerBranch.CurrentBudget < NewSum) {
+            $.LoadingOverlay("hide");
+            var res = await customConfirm({ sum: NewSum, CurrentBudget: Discount_ServerBranch.CurrentBudget })
+            if (res.value == true) {
+                $.LoadingOverlay("show");
+            }
+            else {
                 $.LoadingOverlay("hide");
-                var res = await customConfirm({ sum: NewSum, CurrentBudget: Discount_ServerBranch.CurrentBudget })
-                if (res.value == true) {
-                    $.LoadingOverlay("show");
-                }
-                else {
-                    $.LoadingOverlay("hide");
-                    $('.btnSave').prop('disabled', false);
-                    return;
-                }
+                $('.btnSave').prop('disabled', false);
+                return;
             }
         }
+    }
 
+    /*
+            //-------------------
+            Obj_Discount_Master.OrderBy = "Id"
+            Obj_Discount_Master.Is_Increase = false
+            Obj_Discount_Master.ID = obj.MasterId
+            // var New_Discount_Master = await get_RecordByID(Obj_Discount_Master)
+    
+            //-------------------------- در مستر وضعیت فاکتور
+    
+            Obj_Discount_Detail.OrderBy = "Id"
+            Obj_Discount_Detail.Is_Increase = false
+            Obj_Discount_Detail.Filter = "(MasterId/Id eq  " + obj.MasterId + ")"
+            //  var Discount_Detail = await get_Records(Obj_Discount_Detail)
+    
+            var results = await Promise.all([
+                get_RecordByID(Obj_Discount_Master),
+                get_Records(Obj_Discount_Detail)
+            ]);
+            var New_Discount_Master = results[0]
+            var Discount_Detail = results[1]
+    */
 
-        //-------------------
+    var status = 6 //تایید نشده
+    if (Discount_WorkFlow.BaseData.Id == 4) {
+        status = 4
+    }
+    else {
+        //  Discount_WorkFlow.BaseData.Id
 
-        var objData = await ChangeBudget(utilityObj, Discount_WorkFlow, Discount_WorkFlow_Next, Discount_ServerBranch, obj)
+        for (let index = 0; index < Discount_Detail.length; index++) {
 
+            var res = arrayDetails.find(x => x.ID == Discount_Detail.Id);
+            if (res == undefined) {
 
+                if (Discount_Detail[index].StatusWorkFlow.Id == 4)//در گردش
+                {
+                    status = 4
+                    break
+                }
+                else if (Discount_Detail[index].StatusWorkFlow.Id == 5)//پایان
+                {
+                    status = 5
+
+                }
+            }
+            else {
+                if (Discount_Detail[index].StatusWorkFlow.Id == 5)
+                    status = 5
+            }
+        }
+    }
+
+    var resultPap = await InsertToInsertSaleDocsMarketingDiscounts(Discount_Master, status)
+    /*در صورتی که مرحله نهایی بود 
+باید در پپ ویرایش انجام شود
+table :  saledocItems  
+field : Vdispercent
+*/
+
+    if (Discount_WorkFlow.BaseData.Id == 5) {
 
         var CreatePromise = []
-        for (let index = 0; index < arrayDetails.length; index++) {
-            CreatePromise.push(
-                update_Record(arrayDetails[index].ID,
-                    {
-                        DiscountVal: arrayDetails[index].discountVal.toString(),
-                        Step: Discount_WorkFlow.nextStep,
-                        StatusWorkFlowId: Discount_WorkFlow.BaseData.Id,
-                        TypeTakhfifId: parseInt(utilityObj.TypeTakhfif),
-                        CurrentConfirmId: (Discount_WorkFlow.nextStep == 3 ? MarketingDirector.User.Id : Discount_Confirm[0].Confirmator.Id),
-                        lastDsc: utilityObj.description,
-                        SendNotification: true
-                    },
-                    "Discount_Detail"))
-        }
-        if (objData.ServerBranchCurrentBudget != undefined) {
-            CreatePromise.push(
-                update_Record(obj.ServerBranchId,
-                    {
-                        CurrentBudget: objData.ServerBranchCurrentBudget
-                    },
-                    "Discount_ServerBranch"
-                ))
-        }
+        for (let index = 0; index < Discount_Detail.length; index++) {
+            //--search in Detail
+            // var res = Discount_Detail.find(x => x.Id === arrayDetails[index].Id);
+            var res = arrayDetails.find(x => x.ID == Discount_Detail[index].Id);
+            if (res == undefined) {
 
+            }
+            else {
+                debugger
+                var objSaledocItems = {}
+                objSaledocItems.Vdispercent = res.discountVal.toString()
+                objSaledocItems.SaleDocItemId = Discount_Detail[index].SaledocItemId
+                objSaledocItems.SaleDocId = Discount_Detail[index].MasterId.SaleDocId
+                CreatePromise.push(
+                    UpdateSaledocItems(objSaledocItems)
+                )
+            }
 
-
-        if (objData.MarketingDirectorCurrentBudget != undefined) {
-            CreatePromise.push(
-                update_Record(obj.MarketingDirectorId,
-                    {
-
-                        CurrentBudget: parseInt(objData.MarketingDirectorCurrentBudget),
-                    },
-                    "Discount_MarketingDirector"
-                ))
-        }
-        CreatePromise.push(create_Record({
-            Title: "کلی",
-            MasterIdId: obj.MasterId,
-            Result: Discount_WorkFlow.Title,
-            Dsc: utilityObj.description,
-            DateConfirm: todayShamsy8char(),
-            TimeConfirm: CurrentTime(),
-            ConfirmIdId: obj.ConfirmId,
-
-        }, "Discount_Log"))
-
-        for (let index = 0; index < arrayDetails.length; index++) {
-            CreatePromise.push(
-                create_Record(
-                    {
-                        DetailIdId: arrayDetails[index].ID,
-                        Title: "با جزئیات",
-                        MasterIdId: obj.MasterId,
-                        Result: Discount_WorkFlow.Title,
-                        Dsc: utilityObj.description,
-                        DateConfirm: todayShamsy8char(),
-                        TimeConfirm: CurrentTime(),
-                        ConfirmIdId: obj.ConfirmId,
-                    },
-                    "Discount_Log"))
         }
 
         var results = await Promise.all(CreatePromise);
-
-
-        // 
-        //-------------------------- در مستر وضعیت فاکتور
-
-        Obj_Discount_Detail.OrderBy = "Id"
-        Obj_Discount_Detail.Is_Increase = false
-        Obj_Discount_Detail.Filter = "(MasterId/Id eq  " + obj.MasterId + ")"
-        var Discount_Detail = await get_Records(Obj_Discount_Detail)
-
-        var status = 6 //تایید نشده
-        for (let index = 0; index < Discount_Detail.length; index++) {
-            if (Discount_Detail[index].StatusWorkFlow.Id == 4)//در گردش
-            {
-                status = 4
-                break
-            }
-            else if (Discount_Detail[index].StatusWorkFlow.Id == 5)//پایان
-            {
-                status = 5
-
-            }
-        }
-        var results = await update_Record(obj.MasterId, {
-            StatusWorkFlowId: status,
-            SendNotification: true
-        },
-            "Discount_Master"
-        )
-
-        //-------------------------------
-        //  $.LoadingOverlay("hide");
-        showAlert()
-        $("#window").data("kendoWindow").close();
-        ShowTaskCartabl();
-        $.LoadingOverlay("hide");
-
+        debugger
+        //  var resultPap = await  UpdateSaledocItems(obj)
     }
+
+    var objData = await ChangeBudget(utilityObj, Discount_WorkFlow, Discount_WorkFlow_Next, Discount_ServerBranch, obj)
+
+
+
+    var CreatePromise = []
+    for (let index = 0; index < arrayDetails.length; index++) {
+        CreatePromise.push(
+            update_Record(arrayDetails[index].ID,
+                {
+                    DiscountVal: arrayDetails[index].discountVal.toString(),
+                    Step: Discount_WorkFlow.nextStep,
+                    StatusWorkFlowId: Discount_WorkFlow.BaseData.Id,
+                    TypeTakhfifId: parseInt(utilityObj.TypeTakhfif),
+                    CurrentConfirmId: (Discount_WorkFlow.nextStep == 3 ? MarketingDirector.User.Id : Discount_Confirm[0].Confirmator.Id),
+                    lastDsc: utilityObj.description,
+                    SendNotification: true
+                },
+                "Discount_Detail"))
+    }
+    if (objData.ServerBranchCurrentBudget != undefined) {
+        CreatePromise.push(
+            update_Record(obj.ServerBranchId,
+                {
+                    CurrentBudget: objData.ServerBranchCurrentBudget
+                },
+                "Discount_ServerBranch"
+            ))
+    }
+
+
+
+    if (objData.MarketingDirectorCurrentBudget != undefined) {
+        CreatePromise.push(
+            update_Record(obj.MarketingDirectorId,
+                {
+
+                    CurrentBudget: parseInt(objData.MarketingDirectorCurrentBudget),
+                },
+                "Discount_MarketingDirector"
+            ))
+    }
+    CreatePromise.push(create_Record({
+        Title: "کلی",
+        MasterIdId: obj.MasterId,
+        Result: Discount_WorkFlow.Title,
+        Dsc: utilityObj.description,
+        DateConfirm: todayShamsy8char(),
+        TimeConfirm: CurrentTime(),
+        ConfirmIdId: obj.ConfirmId,
+
+    }, "Discount_Log"))
+
+    for (let index = 0; index < arrayDetails.length; index++) {
+        CreatePromise.push(
+            create_Record(
+                {
+                    DetailIdId: arrayDetails[index].ID,
+                    Title: "با جزئیات",
+                    MasterIdId: obj.MasterId,
+                    Result: Discount_WorkFlow.Title,
+                    Dsc: utilityObj.description,
+                    DateConfirm: todayShamsy8char(),
+                    TimeConfirm: CurrentTime(),
+                    ConfirmIdId: obj.ConfirmId,
+                },
+                "Discount_Log"))
+    }
+
+    var results = await Promise.all(CreatePromise);
+
+
+
+    // -----------------------------وضعیت فاکتور در مستر
+
+    var results = await update_Record(obj.MasterId, {
+        StatusWorkFlowId: status,
+        SendNotification: true
+    },
+        "Discount_Master"
+    )
+
+
+
+
+    //-------------------------------
+    //  $.LoadingOverlay("hide");
+    showAlert()
+    $("#window").data("kendoWindow").close();
+    ShowTaskCartabl();
+    $.LoadingOverlay("hide");
+
+
 
 
 }
@@ -1042,7 +1121,10 @@ async function ChangeBudget(utilityObj, Discount_WorkFlow, Discount_WorkFlow_Nex
 
 //--------------------------------------نمایش بخش های مختلف فاکتور
 /*نمایش هدر بودجه جاری و مشخصات شعبه */
-function ShowHeaderbranch(Discount_ServerBranch, Discount_Confirm, Discount_Brand, obj) {
+async function ShowHeaderbranch(Discount_ServerBranch, Discount_Confirm, Discount_Brand, obj) {
+
+    _ServiceObj = { IP_Server: Discount_ServerBranch.IP_Server, DB: Discount_ServerBranch.DataBaseName, ServerBranchId: Discount_ServerBranch.Id }
+
 
     if (obj.Step == 3) {
         var Headerbranch = "<table class='table'>" +
@@ -1238,20 +1320,19 @@ async function ShowDecision(obj, Detail_Factor, Discount_Confirm, MarketingDirec
     /* در صورتی که درکارتابل بود این قسمت نمایش داده میشود و لی اگر صفر بود منظور خود درخواست دهنده است که باید ویرایش نماید */
     // if (Detail_Factor[0].MasterId.Step > 0) {
     var DecisionDiv = "<table class='table'>"
-if(obj.Step==3)
-{
-    DecisionDiv += "<tr><td>درخواست افزایش بودجه : " +
-        "<input id='TaskhfifNiaz' type='text' onkeyup='changeInputToThreeDigit(this)'" +
-        "value=" + SeparateThreeDigits(TaskhfifNiaz > 0 ? TaskhfifNiaz : 0) + " />" +
-        "<button style='margin-right:8px'  onclick='saveForTaskhfifNiaz({" +
-        "MasterId:" + obj.MasterId + "," +
-        "ServerBranchId:" + obj.ServerBranchId + "," +
-        "MarketingDirectorId:" + MarketingDirector[0].MarketingDirector.Id + "," +
-        "ConfirmId:" + (obj.Step == 3 ? MarketingDirector[0].Id : Discount_Confirm[0].Id) + "," +
-        "Step:" + obj.Step +
-        "})' " +
-        "type='button' class='btn btn-success'>ثبت</button></td></tr>"
-}
+    if (obj.Step == 3) {
+        DecisionDiv += "<tr><td>درخواست افزایش بودجه : " +
+            "<input id='TaskhfifNiaz' type='text' onkeyup='changeInputToThreeDigit(this)'" +
+            "value=" + SeparateThreeDigits(TaskhfifNiaz > 0 ? TaskhfifNiaz : 0) + " />" +
+            "<button style='margin-right:8px'  onclick='saveForTaskhfifNiaz({" +
+            "MasterId:" + obj.MasterId + "," +
+            "ServerBranchId:" + obj.ServerBranchId + "," +
+            "MarketingDirectorId:" + MarketingDirector[0].MarketingDirector.Id + "," +
+            "ConfirmId:" + (obj.Step == 3 ? MarketingDirector[0].Id : Discount_Confirm[0].Id) + "," +
+            "Step:" + obj.Step +
+            "})' " +
+            "type='button' class='btn btn-success'>ثبت</button></td></tr>"
+    }
     DecisionDiv += "<tr><td>توضیحات : " +
         "<textarea  rows=4 cols=100  name='comment' form='usrform'    placeholder='توضیحات ...'></textarea></td>" +
         "</tr>" +
@@ -1394,6 +1475,45 @@ function closeModal() {
 
     $('#ModaDetail').modal('toggle');
 }
+async function InsertToInsertSaleDocsMarketingDiscounts(Discount_Master, status) {
+    _ServiceObj.typeWebService = "InsertSaleDocsMarketingDiscounts"
+
+    _ServiceObj.SqlQuery = "update SaleDocsMarketingDiscounts" +
+        " set PortalStatus=" + status + "" +
+        " where PortalId=" + Discount_Master.Id + " and SaleDocsMarketingDiscountId=" + Discount_Master.IdSaleDocsMarketingDiscounts + ""
+
+    // _ServiceObj.SqlQuery = "if((select count(*) from SaleDocsMarketingDiscounts where  SaleDocId=" + objMaster.SaleDocId + ")>0)" +
+    // " begin" +
+    // " update SaleDocsMarketingDiscounts" +
+    // " set PortalStatus=" + objMaster.StatusWorkFlowId + ",PortalId=" + MasterId + "" +
+    // " where SaleDocId=" + objMaster.SaleDocId + "" +
+    // " select SaleDocsMarketingDiscountId as NewID from SaleDocsMarketingDiscounts where SaleDocId=" + objMaster.SaleDocId + "" +
+    // " end " +
+    // " else " +
+    // " begin " +
+    // " insert into SaleDocsMarketingDiscounts " +
+    // " (SaleDocId,PortalStatus,PortalId,Dsc) " +
+    // " select " + objMaster.SaleDocId + "," + objMaster.StatusWorkFlowId + "," + MasterId + ",'...'" +
+    // " SELECT SCOPE_IDENTITY() AS NewID " +
+    // " end ";
+
+
+
+    var Factor = await serviceDiscount(_ServiceObj);
+
+
+
+}
+async function UpdateSaledocItems(obj) {
+    _ServiceObj.typeWebService = "InsertSaleDocsMarketingDiscounts"
+debugger
+    _ServiceObj.SqlQuery = "update SaledocItems" +
+        " set vDisPercent=" + obj.Vdispercent + "" +
+        " where SaleDocItemId=" + obj.SaleDocItemId + " and SaleDocId=" + obj.SaleDocId + ""
+    
+    var Factor = await serviceDiscount(_ServiceObj);
+    debugger
+}
 //--------------------------
 function customConfirm(obj) {
 
@@ -1465,12 +1585,18 @@ function IsUserInGroup(id) {
         });
     });
 }
+
 //--------------------------------------------------------------------web services
 function serviceDiscount(Factor) {
     return new Promise(resolve => {
         var serviceURL = "https://portal.golrang.com/_vti_bin/SPService.svc/DiscountData"
-        var request = { SaleDocCode: Factor, IpServer: "192.168.10.201", DB: "ISS" }
-        // {"CID":"50","Date":"980919","PortalReqHeaderID":"984"}
+        var request = {
+            SaleDocCode: _ServiceObj.Factor, IpServer: _ServiceObj.IP_Server,
+            DB: _ServiceObj.DB,
+            typeWebService: _ServiceObj.typeWebService,
+            SaleDocId: _ServiceObj.SaleDocId,
+            SqlQuery: _ServiceObj.SqlQuery
+        }
         $.ajax({
             type: "POST",
             url: serviceURL,
