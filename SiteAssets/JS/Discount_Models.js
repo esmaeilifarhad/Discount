@@ -33,7 +33,8 @@ const Obj_Discount_Confirm = {
 const Obj_Discount_Master = {
     NameList: "Discount_Master",
     Select: "ServerBranch/Id,ServerBranch/Title,User/Id,User/Title,StatusWorkFlow/Id,StatusWorkFlow/Title," +
-        "Id,Title,SaleDocCode,OrderDate,TitleUser,TitleUser,CustomerCode,DateCreated,TimeCreated,SendNotification,SaleDocId,IdSaleDocsMarketingDiscounts",
+        "Id,Title,SaleDocCode,OrderDate,TitleUser,TitleUser,CustomerCode,DateCreated,"+
+        "TimeCreated,SendNotification,SaleDocId,IdSaleDocsMarketingDiscounts,CustomerName,CustCatDesc",
     Filter: "",
     Expand: "User,ServerBranch,StatusWorkFlow",
     OrderBy: "Id",
@@ -56,7 +57,7 @@ const Obj_Discount_Detail = {
         "SuppName," +
         "SuppCode,ProductName,SaleDocTypeDesc," +
         "FinalBox,DiscountVal," +
-        "Id,Title,DiscountVal,MasterId/DateCreated,MasterId/TimeCreated,Famount,UnitPrice,lastDsc,SaledocItemId",
+        "Id,Title,DiscountVal,MasterId/DateCreated,MasterId/TimeCreated,Famount,UnitPrice,lastDsc,SaledocItemId,PtypeId,pTypeDesc",
     Filter: "",
     Expand: "MasterId,ServerBranch,StatusWorkFlow,CurrentConfirm",
     OrderBy: "Id",
@@ -72,9 +73,10 @@ const Obj_Discount_Brand = {
 }
 const Obj_MarketingDirector = {
     NameList: "Discount_MarketingDirector",
-    Select: "Id,Title,User/Id,User/Title,CurrentBudget",
+    Select: "Id,Title,IsSubstitute,User/Id,User/Title,CurrentBudget,"+
+    "Substitute_User/Id,Substitute_User/Title",
     Filter: "",
-    Expand: "User",
+    Expand: "User,Substitute_User",
     OrderBy: "Id",
     Is_Increase: true
 }
@@ -104,9 +106,10 @@ const Obj_Discount_Moavenat = {
 }
 const Obj_Discount_BudgetIncrease = {
     NameList: "Discount_BudgetIncrease",
-    Select: "ServerBranch/Title,ServerBranch/Id,Moavenat/Title,Moavenat/Id,Id,Title,BudgetPrice,TimeCreated,DateCreated,IsIncrease,dsc",
+    Select: "ServerBranch/Title,ServerBranch/Id,Moavenat/Title,Moavenat/Id,MarketingDirector/Id,MarketingDirector/Title,"+
+    "Id,Title,BudgetPrice,TimeCreated,DateCreated,IsIncrease,dsc",
     Filter: "",
-    Expand: "Moavenat,ServerBranch",
+    Expand: "Moavenat,ServerBranch,MarketingDirector",
     OrderBy: "DateCreated",
     Is_Increase: true
 }
@@ -121,5 +124,37 @@ const Obj_Discount_IncreaseBudget = {
     OrderBy: "price",
     Is_Increase: true
 }
+const Obj_Discount_Junctions_tbls_Marketing = {
+    NameList: "Discount_Junctions_tbls_Marketing",
+    Select: "BrandId/Title,BrandId/Id,BrandId/BrandId,"+
+    "MarketingDirectorId/Title,MarketingDirectorId/Id,"+
+    "ProductTypesId/Title,ProductTypesId/Id,ProductTypesId/pTypeId,"+
+    "SupplierId/Title,SupplierId/Id,SupplierId/SuppCode,"+
+    "Id,Title",
+    Filter: "",
+    Expand: "BrandId,MarketingDirectorId,SupplierId,ProductTypesId",
+    OrderBy: "Id",
+    Is_Increase: true
+}
+const Obj_Discount_Supplier = {
+    NameList: "Discount_Supplier",
+    Select: "Id,Title,SuppCode",
+    Filter: "",
+    Expand: "",
+    OrderBy: "Id",
+    Is_Increase: true
+}
+const Obj_Discount_ProductTypes={
+    NameList: "Discount_ProductTypes",
+    Select: "Id,Title,pTypeId",
+    Filter: "",
+    Expand: "",
+    OrderBy: "Id",
+    Is_Increase: true
+
+}
+
+
+
 
 

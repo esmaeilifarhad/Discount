@@ -6,8 +6,12 @@ var _ServiceObj = {}
 
 //-----------------------------------
 $(document).ready(function () {
+
+
+    FillBaseData()
     Initial()
     ShowTaskCartabl();
+
 });
 //-----------------------------------------------------------
 function Initial() {
@@ -28,8 +32,11 @@ function Initial() {
     Obj_Initial.webAbsoluteUrl = _spPageContextInfo.webAbsoluteUrl;
 
 }
-
 async function ShowTaskCartabl() {
+
+
+
+
     $.LoadingOverlay("show");
 
     var Discount_Detail = []
@@ -38,35 +45,46 @@ async function ShowTaskCartabl() {
         Discount_Detail.push(Discount_Detail1[index])
     }
 
-    var Discount_Detail2 = await ShowTaskKartablForBrandStep()
-    for (let index = 0; index < Discount_Detail2.length; index++) {
-        Discount_Detail.push(Discount_Detail2[index])
-    }
+
+
 
     //UniqeMasterArrayr
-    ShowTaskCartablTable(Discount_Detail)
+    ShowKartablModirBazaryaby()
+    ShowTaskCartablTable(Discount_Detail, "#ShowCartabl")
 
     ShowTaskIncreaseBudget()
     //------------------------------------------------------
     // ShowTaskCartablTable(Discount_Master)
     $.LoadingOverlay("hide");
 }
-async function ShowTaskCartablTable(Discount_Detail) {
-    // Obj_Discount_Detail.OrderBy = "Id"
-    // Obj_Discount_Detail.Is_Increase = false
-    // Obj_Discount_Detail.Filter = "(CurrentConfirm/Id eq " + _spPageContextInfo.userId + ")"
-    // var Discount_Detail = await get_Records(Obj_Discount_Detail)
+async function ShowTaskCartablTable(Discount_Detail, tagId) {
 
-    // 
+    var uniquArray = []
+    for (let index = 0; index < Discount_Detail.length; index++) {
+        var isExist = uniquArray.find(x =>
+            // x.BrandId==Discount_Detail[index].BrandId &&
+            // x.PtypeId==Discount_Detail[index].PtypeId &&
+            x.MasterId.Id == Discount_Detail[index].MasterId.Id
+        )
 
-    var table = "<table class='table'>"
+        if (isExist == undefined)
+            uniquArray.push(Discount_Detail[index])
+
+    }
+
+    Discount_Detail = uniquArray
+    var table = "<h3 style='text-align:center'>کارتابل تایید</h3><table class='table'>"
     table += "<tr><th>ردیف</th><th>شماره فاکتور</th><th>شعبه</th><th>تاریخ سفارش</th>" +
         "<th>کاربر ثبت کننده</th>" +
         "<th>کد مشتری</th>" +
+        "<th>برند</th>" +
+        "<th>تامین کننده</th>" +
+        "<th>گروه محصول</th>" +
         "<th>مرحله</th>" +
         "<th>تاریخ ثبت درخواست</th>" +
         "<th>نمایش فاکتور</th>" +
         "</tr>"
+
     for (let index = 0; index < Discount_Detail.length; index++) {
 
         table += "<tr BrandId=" + Discount_Detail[index].BrandId + "><td>" + (index + 1) + "</td>" +
@@ -76,6 +94,12 @@ async function ShowTaskCartablTable(Discount_Detail) {
             // "<td>" + SeparateThreeDigits(Discount_Detail[index].MasterId.sum) + "</td>" +
             "<td>" + Discount_Detail[index].MasterId.TitleUser + "</td>" +
             "<td>" + Discount_Detail[index].MasterId.CustomerCode + "</td>" +
+            "<td>" + Discount_Detail[index].BrandDesc + "</td>" +
+            "<td>" + Discount_Detail[index].SuppName + "</td>" +
+            "<td>" + Discount_Detail[index].pTypeDesc + "</td>" +
+
+
+
             "<td>" + Discount_Detail[index].Step + "</td>" +
             "<td>" + foramtDate(Discount_Detail[index].MasterId.DateCreated) + " - " + foramtTime(Discount_Detail[index].MasterId.TimeCreated) + "</td>" +
             "<td>" +
@@ -86,6 +110,8 @@ async function ShowTaskCartablTable(Discount_Detail) {
             "ServerBranchId:" + Discount_Detail[index].ServerBranch.Id + "," +
             "CustomerCode:" + Discount_Detail[index].MasterId.CustomerCode + "," +
             "BrandId:\"" + Discount_Detail[index].BrandId + "\"," +
+            "SuppCode:\"" + Discount_Detail[index].SuppCode + "\"," +
+            "PtypeId:\"" + Discount_Detail[index].PtypeId + "\"," +
             "Step:" + Discount_Detail[index].Step + "}" +
             ")' />" +
             "</td>" +
@@ -94,9 +120,14 @@ async function ShowTaskCartablTable(Discount_Detail) {
 
     table += "</table>"
 
-    $("#ShowCartabl table").remove()
+    if (Discount_Detail.length == 0) {
+        $(tagId).empty()
+    }
+    else {
+        $(tagId).empty()
 
-    $("#ShowCartabl").append(table)
+        $(tagId).append(table)
+    }
 }
 async function ShowTaskKartablForAllStep() {
 
@@ -131,79 +162,271 @@ async function ShowTaskKartablForAllStep() {
         resolve(UniqeMasterArrayr)
     });
 }
-async function ShowTaskKartablForBrandStep() {
-
-    //---------------------------------------فقط برندهای مربوط به خودم را مشاهده میکنم
+async function ShowKartablModirBazaryaby() {
+//-------------Get Data
     Obj_MarketingDirector.OrderBy = "Id"
-    Obj_MarketingDirector.Is_Increase = false
-    Obj_MarketingDirector.Filter = "(User/Id eq " + _spPageContextInfo.userId + ")"
-    var MarketingDirector = await get_Records(Obj_MarketingDirector)
-
-    var Filter = "";
-    for (let index = 0; index < MarketingDirector.length; index++) {
-        Filter += "(MarketingDirectorId eq " + MarketingDirector[index].Id + ") or "
-    }
-    Filter = removeCountChar(Filter, 3)
-
-    Obj_Discount_Brand.OrderBy = "Id"
-    Obj_Discount_Brand.Is_Increase = false
-    Obj_Discount_Brand.Filter = Filter
-    var Discount_Brand = await get_Records(Obj_Discount_Brand)
-
-
+    Obj_MarketingDirector.Is_Increase = true
+    Obj_MarketingDirector.Filter = ""//"(User/Id eq " + _spPageContextInfo.userId + ") or (Substitute_User/Id eq " + _spPageContextInfo.userId + ")"
+    //----
     Obj_Discount_Detail.OrderBy = "Id"
     Obj_Discount_Detail.Is_Increase = false
     Obj_Discount_Detail.Filter = "(StatusWorkFlow/Id eq " + 4 + ") and (Step eq " + 3 + ") "
-    //and (TypeTakhfif/Id eq " + 2 + ")"
-    var Discount_Detail = await get_Records(Obj_Discount_Detail)
+    //------
+    Obj_Discount_Junctions_tbls_Marketing.Filter = ""
+    //-------------
+    var results = await Promise.all([
+        get_Records(Obj_MarketingDirector),
+        get_Records(Obj_Discount_Detail),
+        get_Records(Obj_Discount_Junctions_tbls_Marketing),
+    ]);
 
+    var Discount_MarketingDirector = results[0]
+    var Discount_Detail = results[1]
+    var Discount_Junctions_tbls_Marketing = results[2]
+    //-------------------------------- Group By MarketingDirector هر مدیر بازاریابی چه مواردی مربوط بهش میشود
+    var types = {};
+    for (let index = 0; index < Discount_Junctions_tbls_Marketing.length; index++) {
 
-    Filter = "";
-    for (let index = 0; index < Discount_Brand.length; index++) {
-
-        var res = Discount_Detail.find(x =>
-            x.BrandId == Discount_Brand[index].BrandId);
-        if (res != undefined) {
-            Filter += "(BrandId eq " + Discount_Brand[index].BrandId + ") or "
+        var groupName = Discount_Junctions_tbls_Marketing[index].MarketingDirectorId.Id;
+        if (!types[groupName]) {
+            types[groupName] = [];
         }
-    }
-    Filter = removeCountChar(Filter, 4)
 
-    if (Filter == "") {
-        Filter = "((StatusWorkFlow/Id eq " + 4 + ") and (Step eq " + 3 + ")) "
-
-    }
-    else {
-        Filter = "((StatusWorkFlow/Id eq " + 4 + ") and (Step eq " + 3 + ")) and (" + Filter + ")"
+        types[groupName].push({
+            BrandId: Discount_Junctions_tbls_Marketing[index].BrandId.BrandId,
+            SuppCode: Discount_Junctions_tbls_Marketing[index].SupplierId.SuppCode,
+            pTypeId: Discount_Junctions_tbls_Marketing[index].ProductTypesId.pTypeId
+        });
 
     }
+    //---------------------- تایید کننده جاری اگر تیک جانشین خورده باشد میتواند تایید کنددر غیر اینصورت نه
 
+    var Discount_MarketingDirectorTemp = []
+    for (var index = 0; index < Discount_MarketingDirector.length; index++) {
+        //تیک جانشین نخورده باشد
+        if (Discount_MarketingDirector[index].IsSubstitute == false) {
+            if (Discount_MarketingDirector[index].User.Id == _spPageContextInfo.userId) {
+                Discount_MarketingDirectorTemp.push(Discount_MarketingDirector[index])
+            }
+        }
+        //تیک جانشین خورده
+        else {
+            if (Discount_MarketingDirector[index].Substitute_User.Id == _spPageContextInfo.userId) {
+                Discount_MarketingDirectorTemp.push(Discount_MarketingDirector[index])
+            }
+        }
 
-    Obj_Discount_Detail.OrderBy = "Id"
-    Obj_Discount_Detail.Is_Increase = false
-    Obj_Discount_Detail.Filter = Filter
-    var Discount_Detail = await get_Records(Obj_Discount_Detail)
+    }
+    //----------------------------------
+    var filter = ""
+    Discount_MarketingDirector = Discount_MarketingDirectorTemp
+    for (let index = 0; index < Discount_MarketingDirector.length; index++) {
+        filter += "(MarketingDirectorId/Id eq " + Discount_MarketingDirector[index].Id + ") or "
+    }
+    filter = removeCountChar(filter, 3)
 
+    if (Discount_MarketingDirector.length == 0) {
+        alert("احتراما موردی برای شما پیدا نشد.")
+        return
+    }
+    //--------------------------
 
+    Obj_Discount_Junctions_tbls_Marketing.OrderBy = "Id"
+    Obj_Discount_Junctions_tbls_Marketing.Is_Increase = true
+    Obj_Discount_Junctions_tbls_Marketing.Filter = filter
+    var results = await Promise.all([
+        get_Records(Obj_Discount_Junctions_tbls_Marketing),
+    ]);
+
+    var Discount_Junctions_tbls_Marketing = results[0]
+
+    //------------------
 
     var UniqeMasterArrayr = []
+    var NoAssign = []//----مواردی که به کسی تخصیص داده نشده است
+    var mm = []
+    var ArrayUpdateCurrentConfirmInDetail = []
     for (let index = 0; index < Discount_Detail.length; index++) {
-        Discount_Detail[index];
+        //--شرط برند
+        var res1 = Discount_Junctions_tbls_Marketing.filter(x =>
+            x.BrandId.BrandId == Discount_Detail[index].BrandId)
+        if (res1.length == 0) {
+            NoAssign.push(Discount_Detail[index])
+            continue
+        }
+        //--شرط تامین کننده
+        var res2 = Discount_Junctions_tbls_Marketing.filter(x =>
+            x.SupplierId.SuppCode == Discount_Detail[index].SuppCode)
+        if (res2.length == 0) {
+            NoAssign.push(Discount_Detail[index])
+            continue
+        }
+        //--شرط گروه کالا
+        var res3 = Discount_Junctions_tbls_Marketing.filter(x =>
+            x.ProductTypesId.pTypeId == Discount_Detail[index].PtypeId)
+        if (res3.length == 0) {
+            NoAssign.push(Discount_Detail[index])
+            continue
+        }
+        var countOfMarketingDirector = []
+        //مدیربازرایابی های مربوطه را پیدا میکنیم
+        for (let i = 0; i < res1.length; i++) {
+            for (let j = 0; j < res2.length; j++) {
+                for (let k = 0; k < res3.length; k++) {
 
+                    if (res1[i].MarketingDirectorId.Id == res2[j].MarketingDirectorId.Id &&
+                        res2[j].MarketingDirectorId.Id == res3[k].MarketingDirectorId.Id) {
+                        //---------------
+
+                        var obj = {}
+                        obj.MarketingDirectorTitle = res1[i].MarketingDirectorId.Title
+                        obj.MarketingDirectorId = res1[i].MarketingDirectorId.Id
+                        obj.BrandDesc = Discount_Detail[index].BrandDesc
+                        obj.SuppName = Discount_Detail[index].SuppName
+                        obj.pTypeDesc = Discount_Detail[index].pTypeDesc
+
+                        countOfMarketingDirector.push(obj)
+                        //-----------
+                        var result = mm.find(x =>
+                            x.Id == res1[i].MarketingDirectorId.Id)
+                        if (result == undefined)
+                            mm.push(res1[i].MarketingDirectorId)
+                    }
+
+                }
+
+            }
+
+        }
+        //خطا نباید دو تا تایید کننده برای یک مورد وجود داشته باشد
+        if (countOfMarketingDirector.length > 1) {
+
+            $("#ModaDetail .modal-header").empty()
+            $("#ModaDetail .modal-body").empty()
+            $("#ModaDetail .modal-footer").empty()
+
+            var tableHeader = "<h3>خطا : دو تایید کننده برای یک مورد پیدا شد</h3>"
+
+            table = "<table class='table table-bordered'><tr><th>مدیر بازاریابی</th><th>برند</th><th>تامین کننده</th><th>گروه کالا</th></tr>"
+            for (let m = 0; m < countOfMarketingDirector.length; m++) {
+
+                table += "<tr>" +
+                    "<td>" + countOfMarketingDirector[m].MarketingDirectorTitle + "</td>" +
+                    "<td>" + countOfMarketingDirector[m].BrandDesc + "</td>" +
+                    "<td>" + countOfMarketingDirector[m].SuppName + "</td>" +
+                    "<td>" + countOfMarketingDirector[m].pTypeDesc + "</td>" +
+                    "</tr>"
+
+            }
+
+            table += "</table>"
+            $("#ModaDetail .modal-header").append(tableHeader)
+            $("#ModaDetail .modal-body").append(table)
+            $("#ModaDetail .modal-footer").append("<button class='btn btn-danger' type='button' onclick='closeModal()'>بستن</botton>")
+            $("#ModaDetail").modal();
+
+            return
+
+            // Discount_Detail[index]
+        }
+        //--در صورتی که شروط بالا برقرار بود ردیف فاکتور را برای کاربر لاگین شده در آرایه اضافه مینماییم
         var isExist = UniqeMasterArrayr.find(x =>
-            x.MasterId.Id == Discount_Detail[index].MasterId.Id && x.BrandId == Discount_Detail[index].BrandId);
-        if (isExist == undefined)
-            UniqeMasterArrayr.push(Discount_Detail[index])
+            x.MasterId.Id == Discount_Detail[index].MasterId.Id &&
+            x.BrandId == Discount_Detail[index].BrandId &&
+            x.SuppCode == Discount_Detail[index].SuppCode &&
+            x.PtypeId == Discount_Detail[index].PtypeId
+        );
+        if (isExist == undefined) {
 
+            Discount_Detail[index].MarketingId = mm[0].Id
+            Discount_Detail[index].MarketingTitle = mm[0].Title
+            UniqeMasterArrayr.push(Discount_Detail[index])
+        }
+        //----------------------------------
+        debugger
+        var MarketingDirector = Discount_MarketingDirector.find(x =>
+            x.Id == mm[0].Id)
+
+        if (MarketingDirector.IsSubstitute == true) {
+            ArrayUpdateCurrentConfirmInDetail.push(
+                update_Record(Discount_Detail[index].Id, { CurrentConfirmId: MarketingDirector.Substitute_User.Id }, "Discount_Detail")
+            )
+        }
+        else {
+            ArrayUpdateCurrentConfirmInDetail.push(
+                update_Record(Discount_Detail[index].Id, { CurrentConfirmId: MarketingDirector.User.Id }, "Discount_Detail")
+            )
+        }
+        debugger
     }
 
-    return new Promise(resolve => {
-        resolve(UniqeMasterArrayr)
-    });
+    var results = await Promise.all(ArrayUpdateCurrentConfirmInDetail);
 
+
+    var Discount_Detail = UniqeMasterArrayr
+
+    ShowTaskCartablTable(Discount_Detail, "#KartablModirBazaryaby")
+    ShowNoAssign(NoAssign, types)
 
 }
+async function ShowNoAssign(NoAssign, types) {
 
+    var uniqueArray = []
+    for (let index = 0; index < NoAssign.length; index++) {
+
+        var statusIsExistToanather = 0
+        for (var groupName in types) {
+            var resultBrandId = types[groupName].find(x =>
+                x.BrandId == NoAssign[index].BrandId
+            )
+
+            var resultSuppCode = types[groupName].find(x =>
+                x.SuppCode == NoAssign[index].SuppCode
+            )
+
+            var resultPtypeId = types[groupName].find(x =>
+                x.pTypeId == NoAssign[index].PtypeId
+            )
+
+            if (resultBrandId != undefined && resultSuppCode != undefined && resultPtypeId != undefined) {
+                statusIsExistToanather = 1
+                break
+            }
+
+
+        }
+
+        if (statusIsExistToanather == 1)
+            continue
+
+
+
+        var res = uniqueArray.find(x =>
+            x.BrandId == NoAssign[index].BrandId &&
+            x.SuppName == NoAssign[index].SuppName &&
+            x.pTypeDesc == NoAssign[index].pTypeDesc
+        )
+        if (res == undefined) {
+            uniqueArray.push(NoAssign[index])
+        }
+
+    }
+    //uniqueArray=NoAssign
+
+    var table = "<h3 style='text-align:center'>مواردی که  به هیچ کس تخصیص داده نشده است</h3><table class='table'>" +
+        "<tr><th>برند</th><th>تامین کننده</th><th>گروه محصول</th></tr>"
+    for (let index = 0; index < uniqueArray.length; index++) {
+        table += "<tr>"
+        table += "<td>" + uniqueArray[index].BrandDesc + "</td>"
+        table += "<td>" + uniqueArray[index].SuppName + "</td>"
+        table += "<td>" + uniqueArray[index].pTypeDesc + "</td>"
+        table += "</tr>"
+    }
+    table += "</table>"
+    $("#NoAssign").empty()
+    $("#NoAssign").append(table)
+
+}
 async function ShowTaskIncreaseBudget() {
 
 
@@ -230,7 +453,7 @@ async function ShowTaskIncreaseBudget() {
 
     // 
 
-    var table = "<table class='table tblIncreaseBudget'>"
+    var table = "<h3  style='text-align:center'>کارتابل افزایش بودجه</h3><table class='table tblIncreaseBudget'>"
     table += "<tr><th>ردیف</th>" +
         "<th>عنوان</th>" +
         "<th>بودجه درخواستی</th>" +
@@ -238,6 +461,7 @@ async function ShowTaskIncreaseBudget() {
         "<th>چک</th>" +
         "<th>درخواست دهنده</th>" +
         "<th>بودجه جاری</th>" +
+        "<th>مربوط به فاکتور</th>" +
         "<th><input type='checkbox' id='selectAll' value='انتخاب همه' title='انتخاب همه' alt='انتخاب همه' onclick='selectAllchk(this)' /></th>" +
         "<th><buttton type='button' value='تایید'   class='btn btn-success' onclick='ConfirmIncreaseBudget({confirm:true})'>تایید</button></th>" +
         "<th><buttton type='button'  value='رد'  class='btn btn-danger'  onclick='ConfirmIncreaseBudget({confirm:false})'>رد</button></th>" +
@@ -253,14 +477,20 @@ async function ShowTaskIncreaseBudget() {
             "<td>" + Discount_IncreaseBudget[index].IsEffect + "</td>" +
             "<td name='MarketingDirectorTitle'>" + Discount_IncreaseBudget[index].MarketingDirector.Title + "</td>" +
             "<td name='CurrentBudget'>" + SeparateThreeDigits(Discount_IncreaseBudget[index].MarketingDirector.CurrentBudget) + "</td>" +
+            "<td><button class='btn btn-success' type='button' onclick='showFactor({MasterId:" + Discount_IncreaseBudget[index].MasterId.Id + ",MarketingDirector:" + Discount_IncreaseBudget[index].MarketingDirector.Id + "})'>فاکتور</button></td>" +
             "<td><input IdIncreaseBudget=" + Discount_IncreaseBudget[index].Id + " type='checkbox' name='chkk'/></td>" +
             "</tr>"
     }
     table += "</table>"
 
-    $("#ShowCartabl .tblIncreaseBudget").remove()
+    if (Discount_IncreaseBudget.length.length == 0) {
+        $("#tblIncreaseBudget").empty()
+    }
+    else {
+        $("#tblIncreaseBudget").remove()
 
-    $("#ShowCartabl").append(table)
+        $("#tblIncreaseBudget").append(table)
+    }
 }
 async function selectAllchk(thiss) {
     var res = $(thiss)[0].checked;
@@ -276,6 +506,58 @@ async function selectAllchk(thiss) {
             $(this)[0].checked = false
         })
     }
+
+}
+async function showFactor(obj) {
+
+    Obj_Discount_Detail.OrderBy = "Id"
+    Obj_Discount_Detail.Is_Increase = false
+    Obj_Discount_Detail.Filter = "(MasterId/Id eq " + obj.MasterId + ")"
+
+    Obj_Discount_Brand.OrderBy = "Id"
+    Obj_Discount_Brand.Is_Increase = false
+    Obj_Discount_Brand.Filter = "(MarketingDirector/Id eq  " + obj.MarketingDirector + ")"
+
+    var results = await Promise.all([
+        get_Records(Obj_Discount_Detail),
+        get_Records(Obj_Discount_Brand),
+    ]);
+    var Discount_Detail = results[0]
+    var Discount_Brand = results[1]
+
+    $("#ModaDetail .modal-header").empty()
+    $("#ModaDetail .modal-body").empty()
+    $("#ModaDetail .modal-footer").empty()
+
+    var tableHeader = "<table><tr><td>شماره فاکتور : </td><td>" + Discount_Detail[0].MasterId.SaleDocCode + "</td></tr></table>"
+    table = "<table class='table table-bordered'><tr><th>ردیف</th><th>نام کالا</th><th>درصد تخفیف</th><th>مبلغ تخفیف</th></tr>"
+    for (let index = 0; index < Discount_Detail.length; index++) {
+
+        var res = Discount_Brand.find(x => x.BrandId == Discount_Detail[index].BrandId);
+
+        var discountVal = Discount_Detail[index].DiscountVal
+        var Famount = Discount_Detail[index].Famount
+        var UnitPrice = Discount_Detail[index].UnitPrice
+        var priceCal = (discountVal * Famount * UnitPrice) / 100
+
+        var NewSum = Math.round(priceCal)
+        if (res == undefined)
+            table += "<tr style='background-color:gray'>"
+        else
+            table += "<tr >"
+        table += "<td>" + (index + 1) + "</td>" +
+            "<td>" + Discount_Detail[index].ProductName + "</td>" +
+            "<td>" + Discount_Detail[index].DiscountVal + "</td>" +
+            "<td>" + SeparateThreeDigits(NewSum) + "</td>"
+        table += "</tr>"
+    }
+    table += "</table>"
+    $("#ModaDetail .modal-header").append(tableHeader)
+    $("#ModaDetail .modal-body").append(table)
+    $("#ModaDetail .modal-footer").append("<button class='btn btn-danger' type='button' onclick='closeModal()'>بستن</botton>")
+    $("#ModaDetail").modal();
+
+
 
 }
 async function ConfirmIncreaseBudget(obj) {
@@ -397,7 +679,6 @@ function ShowMessage() {
 
 }
 async function ShowFactorDetail(obj) {
-
     Obj_Discount_BaseData.OrderBy = "Id"
     Obj_Discount_BaseData.Is_Increase = true
     Obj_Discount_BaseData.Filter = "(Code eq " + 1 + ")"
@@ -442,6 +723,19 @@ async function ShowFactorDetail(obj) {
     Obj_WorkFlow.Is_Increase = true
     Obj_WorkFlow.Filter = "(currentStep eq " + obj.Step + ")"
 
+
+
+    // Obj_Discount_Junctions_tbls_Marketing.OrderBy = "Id"
+    // Obj_Discount_Junctions_tbls_Marketing.Is_Increase = true
+    // Obj_Discount_Junctions_tbls_Marketing.Filter = ""
+
+    // Obj_MarketingDirector.OrderBy = "Id"
+    // Obj_MarketingDirector.Is_Increase = true
+    // Obj_MarketingDirector.Filter = ""
+
+
+    //-------------------------------------
+
     var results = await Promise.all([
         get_Records(Obj_Discount_BaseData),
         get_Records(Obj_Discount_Detail),
@@ -450,7 +744,9 @@ async function ShowFactorDetail(obj) {
         get_Records(Obj_Discount_Log),
         get_Records(Obj_Discount_Confirm),
         get_Records(Obj_Discount_Brand),
-        get_Records(Obj_WorkFlow)
+        get_Records(Obj_WorkFlow),
+        // get_Records(Obj_Discount_Junctions_tbls_Marketing),
+        // get_Records(Obj_MarketingDirector),
     ]);
     var Discount_BaseData = results[0]
     var Detail_Factor = results[1]
@@ -460,7 +756,14 @@ async function ShowFactorDetail(obj) {
     var Discount_Confirm = results[5]
     var Discount_Brand = results[6]
     var Discount_WorkFlow = results[7]
+    // var Discount_Junctions_tbls_Marketing = results[8]
+    // var Discount_MarketingDirector = results[9]
+    // 
+    // for (let index = 0; index < Discount_MarketingDirector.length; index++) {
+    //     const element = array[index];
 
+    // }
+    // 
     ShowHeaderbranch(Discount_ServerBranch, Discount_Confirm, Discount_Brand, obj)
 
     ShowHeaderFactor(Discount_Master, Discount_BaseData, Detail_Factor, Discount_WorkFlow)
@@ -531,7 +834,6 @@ async function save(obj) {
 
     utilityObj.description = $("#Decision1 textarea").val()
     utilityObj.result = $("input[name='decide']:checked").val()
-    // utilityObj.TypeTakhfif = $("#DarTaahod option:selected").val();
 
     //--------------------------------------
     var resVal = checkValidation(utilityObj)
@@ -549,7 +851,6 @@ async function save(obj) {
     Obj_Discount_Master.OrderBy = "Id"
     Obj_Discount_Master.Is_Increase = false
     Obj_Discount_Master.ID = obj.MasterId
-    // var Obj_Discount_Master = await get_RecordByID(Obj_Discount_Master)
     //--------------------------
     Obj_Discount_Detail.OrderBy = "Id"
     Obj_Discount_Detail.Is_Increase = false
@@ -558,13 +859,11 @@ async function save(obj) {
     Obj_WorkFlow.OrderBy = "CurrentBudget"
     Obj_WorkFlow.Is_Increase = false
     Obj_WorkFlow.ID = utilityObj.result
-    // var Discount_ServerBranch = await get_RecordByID(Obj_Discount_ServerBranch)
 
     //---------------------------------
     Obj_MarketingDirector.OrderBy = "Id"
     Obj_MarketingDirector.Is_Increase = false
     Obj_MarketingDirector.ID = obj.MarketingDirectorId
-    // var MarketingDirector = await get_RecordByID(Obj_MarketingDirector)
 
 
     var results = await Promise.all([
@@ -583,17 +882,14 @@ async function save(obj) {
     var MarketingDirector = results[4]
 
 
-
+    //-----------------------------------------
     Obj_WorkFlow.OrderBy = "Id"
     Obj_WorkFlow.Is_Increase = false
     Obj_WorkFlow.Filter = "(currentStep eq " + Discount_WorkFlow.nextStep + ")"
-    // var Discount_WorkFlow_Next = await get_Records(Obj_WorkFlow)
-
 
     Obj_Discount_Confirm.OrderBy = "Id"
     Obj_Discount_Confirm.Is_Increase = false
     Obj_Discount_Confirm.Filter = "(ConfirmRow/Row eq " + Discount_WorkFlow.nextStep + ") and (ServerBranch/Id eq " + Discount_ServerBranch.Id + ")"
-    // var Discount_Confirm = await get_Records(Obj_Discount_Confirm)
 
     var results = await Promise.all([
         get_Records(Obj_WorkFlow),
@@ -603,7 +899,8 @@ async function save(obj) {
     var Discount_WorkFlow_Next = results[0]
     var Discount_Confirm = results[1]
 
-    //-------------------------------
+    //--------------------------------------------------  قدیم محاسبه جمع تخفیف ها
+
     var OldSum = 0
     for (let index = 0; index < _Factor.length; index++) {
 
@@ -611,7 +908,7 @@ async function save(obj) {
 
     }
     utilityObj.OldSum = OldSum
-    //----------------------------------------------------محاسبه جمع تخفیف ها
+    //---------------------------------------------------- جدید محاسبه جمع تخفیف ها
     var NewSum = 0
     $("#Detail1 table  .rows").each(function () {
         var DataId = parseInt($(this).attr("DataId"))
@@ -628,10 +925,8 @@ async function save(obj) {
         }
     })
     utilityObj.NewSum = NewSum
-    //----------------------------------------------------
+    //---------------اگر مرحله نهایی بود دوباره بودجه را چک میکنم اگر شرایط را نداشت اجازه ثبت نمیدهیم
     checkBudget(Discount_WorkFlow, Discount_ServerBranch, utilityObj, MarketingDirector)
-
-
 
     if (_arrayMessage.length > 0) {
         ShowMessage()
@@ -655,38 +950,18 @@ async function save(obj) {
         }
     }
 
-    /*
-            //-------------------
-            Obj_Discount_Master.OrderBy = "Id"
-            Obj_Discount_Master.Is_Increase = false
-            Obj_Discount_Master.ID = obj.MasterId
-            // var New_Discount_Master = await get_RecordByID(Obj_Discount_Master)
-    
-            //-------------------------- در مستر وضعیت فاکتور
-    
-            Obj_Discount_Detail.OrderBy = "Id"
-            Obj_Discount_Detail.Is_Increase = false
-            Obj_Discount_Detail.Filter = "(MasterId/Id eq  " + obj.MasterId + ")"
-            //  var Discount_Detail = await get_Records(Obj_Discount_Detail)
-    
-            var results = await Promise.all([
-                get_RecordByID(Obj_Discount_Master),
-                get_Records(Obj_Discount_Detail)
-            ]);
-            var New_Discount_Master = results[0]
-            var Discount_Detail = results[1]
-    */
 
+    //--------محاسبه وضعیت نهایی فاکتور که یا درگردش هست یا رد شده و یا پایان
     var status = 6 //تایید نشده
     if (Discount_WorkFlow.BaseData.Id == 4) {
-        status = 4
+        status = 4//در گردش
     }
     else {
-        //  Discount_WorkFlow.BaseData.Id
-
         for (let index = 0; index < Discount_Detail.length; index++) {
 
-            var res = arrayDetails.find(x => x.ID == Discount_Detail.Id);
+            var res = arrayDetails.find(x => x.ID == Discount_Detail[index].Id);
+
+            //اگر رکوردی غیر از رکوردهای جاری وجود داشت 
             if (res == undefined) {
 
                 if (Discount_Detail[index].StatusWorkFlow.Id == 4)//در گردش
@@ -696,17 +971,25 @@ async function save(obj) {
                 }
                 else if (Discount_Detail[index].StatusWorkFlow.Id == 5)//پایان
                 {
-                    status = 5
+                    status = 5//پایان
 
                 }
             }
             else {
-                if (Discount_Detail[index].StatusWorkFlow.Id == 5)
-                    status = 5
+
+                if (Discount_WorkFlow.BaseData.Id == 5) {
+                    //var s = Discount_WorkFlow.BaseData.Id
+                    status = 5//پایان
+                }
             }
         }
     }
 
+    /*
+    نکته : باید علیت در سمت پپ انجام شود که اگر یک موقع سرور قطع بود
+     از سمت سرور دیگر اداه فرایند در سمت پرتال جلو نرود
+    */
+    //----------------------------------- بروز رسانی در پپ در جدول واسط
     var resultPap = await InsertToInsertSaleDocsMarketingDiscounts(Discount_Master, status)
     /*در صورتی که مرحله نهایی بود 
 باید در پپ ویرایش انجام شود
@@ -725,9 +1008,9 @@ field : Vdispercent
 
             }
             else {
-                debugger
+
                 var objSaledocItems = {}
-                objSaledocItems.Vdispercent = res.discountVal.toString()
+                objSaledocItems.Vdispercent = (res.discountVal == undefined ? 0 : res.discountVal.toString())
                 objSaledocItems.SaleDocItemId = Discount_Detail[index].SaledocItemId
                 objSaledocItems.SaleDocId = Discount_Detail[index].MasterId.SaleDocId
                 CreatePromise.push(
@@ -738,14 +1021,12 @@ field : Vdispercent
         }
 
         var results = await Promise.all(CreatePromise);
-        debugger
-        //  var resultPap = await  UpdateSaledocItems(obj)
+
+
     }
-
+    //--------------------------------------
     var objData = await ChangeBudget(utilityObj, Discount_WorkFlow, Discount_WorkFlow_Next, Discount_ServerBranch, obj)
-
-
-
+    //-------------------------------------
     var CreatePromise = []
     for (let index = 0; index < arrayDetails.length; index++) {
         CreatePromise.push(
@@ -1001,36 +1282,57 @@ function CalulateDarsad(thiss, Famount, UnitPrice) {
     $("#sumTakhfif").append("<span>" + SeparateThreeDigits(NewSum) + "</span>")
 
     var MarketingDirectorCurrentBudget = $("#MarketingDirectorCurrentBudget").text()
+    MarketingDirectorCurrentBudget = removeComma(MarketingDirectorCurrentBudget)
+    MarketingDirectorCurrentBudget = parseInt(MarketingDirectorCurrentBudget)
+
     $("#TaskhfifNiaz").val(SeparateThreeDigits(NewSum - MarketingDirectorCurrentBudget > 0 ? NewSum - MarketingDirectorCurrentBudget : 0))
     //("#MarketingDirectorCurrentBudget span").text()
 
 }
 async function ChangeBudget(utilityObj, Discount_WorkFlow, Discount_WorkFlow_Next, Discount_ServerBranch, obj) {
+    /*
+    1 در تعهد شعبه 
+    2 در تعهد دفتر مرکزی
+    4 در گردش
+    5 پایان
+    6 تایید نشده
+    */
+
     var objData = {}
 
-
-
-
-    if (Discount_WorkFlow_Next[0].BaseDataPart.Id == Discount_WorkFlow.BaseDataPart.Id && Discount_WorkFlow.BaseDataPart.Id == 1 && Discount_WorkFlow.BaseData.Id == 4) {
-        if (utilityObj.OldSum < utilityObj.NewSum) {
-            objData.ServerBranchCurrentBudget = Discount_ServerBranch.CurrentBudget - (utilityObj.NewSum - utilityObj.OldSum)
-        }
-        else if (utilityObj.OldSum > utilityObj.NewSum) {
-            objData.ServerBranchCurrentBudget = Discount_ServerBranch.CurrentBudget + (utilityObj.OldSum - utilityObj.NewSum)
-        }
-        else {
-            objData.ServerBranchCurrentBudget = Discount_ServerBranch.CurrentBudget
-        }
-
+    // در بخش شعبه در مرحله نهایی و تایید مبلغ فاکتور را از بودجه کم میکنیم
+    if (Discount_WorkFlow.BaseDataPart.Id == 1 &&
+        Discount_WorkFlow.BaseData.Id == 5) {
+        // if (utilityObj.OldSum < utilityObj.NewSum) {
+        //     objData.ServerBranchCurrentBudget = Discount_ServerBranch.CurrentBudget - (utilityObj.NewSum - utilityObj.OldSum)
+        // }
+        // else if (utilityObj.OldSum > utilityObj.NewSum) {
+        //     objData.ServerBranchCurrentBudget = Discount_ServerBranch.CurrentBudget + (utilityObj.OldSum - utilityObj.NewSum)
+        // }
+        // else {
+        //     objData.ServerBranchCurrentBudget = Discount_ServerBranch.CurrentBudget
+        // }
+        objData.ServerBranchCurrentBudget = Discount_ServerBranch.CurrentBudget - (utilityObj.NewSum)
     }
-    //در بخش شعبه تایید نشده باشد
-    else if (Discount_WorkFlow.BaseData.Id == 6 && Discount_WorkFlow.BaseDataPart.Id == 1) {
-        objData.ServerBranchCurrentBudget = Discount_ServerBranch.CurrentBudget + utilityObj.OldSum
-    }
-    else if (Discount_WorkFlow_Next[0].BaseDataPart.Id != Discount_WorkFlow.BaseDataPart.Id) {
-        objData.ServerBranchCurrentBudget = Discount_ServerBranch.CurrentBudget + utilityObj.OldSum
-    }
-    else if (Discount_WorkFlow.BaseDataPart.Id == 2 && Discount_WorkFlow.BaseData.Id == 5) {
+    // در بخش شعبه تایید نشده باشد بودجه باز میگردد
+    // else if (Discount_WorkFlow.BaseData.Id == 6 &&
+    //     Discount_WorkFlow.BaseDataPart.Id == 1) {
+    //     objData.ServerBranchCurrentBudget = Discount_ServerBranch.CurrentBudget + utilityObj.OldSum
+    // }
+    //  وقتی از تعهد شعبه به دفتر مرکزی میرود باید مقدار فاکتور بازگردد به بودجه شعبه
+    // else if (Discount_WorkFlow_Next[0].BaseDataPart.Id != Discount_WorkFlow.BaseDataPart.Id &&
+    //     Discount_WorkFlow.BaseDataPart.Id == 1
+    //     )  {
+    //     objData.ServerBranchCurrentBudget = Discount_ServerBranch.CurrentBudget + utilityObj.OldSum
+    // }
+    //   وقتی از   دفتر مرکزی  به شعبه میرود باید مقدار فاکتور از بودجه شعبه کم شود
+    //  else if (Discount_WorkFlow_Next[0].BaseDataPart.Id != Discount_WorkFlow.BaseDataPart.Id &&
+    //     Discount_WorkFlow.BaseDataPart.Id == 2
+    //     )  {
+    //     objData.ServerBranchCurrentBudget = Discount_ServerBranch.CurrentBudget - utilityObj.NewSum
+    // }
+    // در تعهد دفتری مرکزی و پایان
+    else if (Discount_WorkFlow.BaseDataPart.Id == 2 && Discount_WorkFlow.BaseData.Id == 5 && Discount_WorkFlow.currentStep == 3) {
 
         Obj_MarketingDirector.OrderBy = "Id"
         Obj_MarketingDirector.Is_Increase = false
@@ -1123,18 +1425,47 @@ async function ChangeBudget(utilityObj, Discount_WorkFlow, Discount_WorkFlow_Nex
 /*نمایش هدر بودجه جاری و مشخصات شعبه */
 async function ShowHeaderbranch(Discount_ServerBranch, Discount_Confirm, Discount_Brand, obj) {
 
+
+
+    Obj_Discount_BudgetIncrease.OrderBy = "Id"
+    Obj_Discount_BudgetIncrease.Is_Increase = true
+    Obj_Discount_BudgetIncrease.Filter = "(MarketingDirector/Id eq " + obj.Step + ")"
+
+    var results = await Promise.all([
+        get_Records(Obj_Discount_BaseData),
+        // get_RecordByID(Obj_Discount_BudgetIncrease),
+    ]);
+    var Discount_BudgetIncrease = results[0]
+
+
     _ServiceObj = { IP_Server: Discount_ServerBranch.IP_Server, DB: Discount_ServerBranch.DataBaseName, ServerBranchId: Discount_ServerBranch.Id }
 
 
     if (obj.Step == 3) {
+
+        Obj_Discount_BudgetIncrease.OrderBy = "Id"
+        Obj_Discount_BudgetIncrease.Is_Increase = true
+        Obj_Discount_BudgetIncrease.Filter = "(currentStep eq " + Discount_Brand[0].MarketingDirector.Id + ")"
+
+        var results = await Promise.all([
+            get_Records(Obj_Discount_BaseData),
+            // get_RecordByID(Obj_Discount_BudgetIncrease),
+        ]);
+        var Discount_BudgetIncrease = results[0]
+
         var Headerbranch = "<table class='table'>" +
             "<tr><td>مدیر بازاریابی : " + Discount_Brand[0].MarketingDirector.Title + "</td>" +
             "<td><span>بودجه مدیر : </span><span id='MarketingDirectorCurrentBudget'>" + SeparateThreeDigits(Discount_Brand[0].MarketingDirector.CurrentBudget) + "</span></td>" +
+            "<td><input type='button' style='background-color:#3a92d2!important;' value='تخفیفات استفاده شده' onclick='ShowTakhfifatEstefadeShode({Discount_ServerBranchId:" + Discount_ServerBranch.Id + "})'></td>" +
             // "<td>نقش : " + Discount_Confirm[0].ConfirmRow.Title + "</td>" +
-            // "<td>مرحله : " + Discount_Confirm[0].ConfirmRow.Row + "</td>" +
             "</tr></table>"
         $("#branch1 table").remove()
         $("#branch1").append(Headerbranch)
+
+        var MarketingDirectorCurrentBudget = parseInt(removeComma($("#MarketingDirectorCurrentBudget").text()))
+        var sumTakhfif = parseInt(removeComma($("#sumTakhfif span").text()));
+
+        $("#TaskhfifNiaz").val(SeparateThreeDigits(sumTakhfif - MarketingDirectorCurrentBudget > 0 ? sumTakhfif - MarketingDirectorCurrentBudget : 0))
     }
     else if (obj.Step == 4) {
         var Headerbranch = "<table class='table'>" +
@@ -1149,35 +1480,174 @@ async function ShowHeaderbranch(Discount_ServerBranch, Discount_Confirm, Discoun
             "<td>بودجه شعبه : " + SeparateThreeDigits(Discount_ServerBranch.CurrentBudget) + "</td>" +
             "<td>نقش : " + Discount_Confirm[0].ConfirmRow.Title + "</td>" +
             "<td>مرحله : " + Discount_Confirm[0].ConfirmRow.Row + "</td>" +
+            "<td><input type='button' style='background-color:#3a92d2!important;' value='تاریخچه' onclick='ShowDiscount_BudgetIncrease({Discount_ServerBranchId:" + Discount_ServerBranch.Id + "})'></td>" +
             "</tr></table>"
         $("#branch1 table").remove()
         $("#branch1").append(Headerbranch)
     }
 }
+async function ShowTakhfifatEstefadeShode(obj) {
+    /*
+    هنگام تایید فاکتور توسط مدیر بازاریابی میزان تخفیفات استفاده شده به ازا 
+    هر شعبه را نیز مشاهده نماید (تخفیفات از ابتدای ماه تا روز تاریخ فاکتور باشد)
+    */
+    var today = todayShamsy8char();
+
+    Obj_Discount_Detail.OrderBy = "Id"
+    Obj_Discount_Detail.Is_Increase = true
+    Obj_Discount_Detail.Filter = "(ServerBranch/Id eq " + obj.Discount_ServerBranchId + ") and " +
+        "(Step eq 2) and (MasterId/OrderDate gt " + 990311 + ") and " +
+        // "(StatusWorkFlow/Id eq 5) and "+
+        "(DiscountVal gt 0)"
+
+    var results = await Promise.all([
+        get_Records(Obj_Discount_Detail),
+        // get_RecordByID(Obj_Discount_BudgetIncrease),
+    ]);
+    var Discount_Detail = results[0]
+
+    //-------------------------
+    var MasterIdFilter = ""
+    var MasterIdFilterarray = []
+    for (let index = 0; index < Discount_Detail.length; index++) {
+        var res = MasterIdFilterarray.find(x =>
+            x == Discount_Detail[index].MasterId.Id)
+
+        if (res == undefined) {
+            MasterIdFilter += "(Id eq " + Discount_Detail[index].MasterId.Id + ") or "
+        }
+        MasterIdFilterarray.push(Discount_Detail[index].MasterId.Id)
+    }
+    MasterIdFilter = removeCountChar(MasterIdFilter, 3)
+    //-------------------------
+    Obj_Discount_Master.OrderBy = "Id"
+    Obj_Discount_Master.Is_Increase = true
+    Obj_Discount_Master.Filter = MasterIdFilter
+    var results = await Promise.all([
+        get_Records(Obj_Discount_Master),
+        // get_RecordByID(Obj_Discount_BudgetIncrease),
+    ]);
+    var Discount_Master = results[0]
+    var table = "<h3 style='text-align:center'>کارتابل مربوط به مدیر بازاریابی</h3><table class='table'>"
+    table += "<tr><th>ردیف</th><th>شماره فاکتور</th><th>مبلغ تخفیف</th>" +
+        "</tr>"
+    //-----------------------
+    var sumAllTakhfif = 0
+    for (let index = 0; index < Discount_Master.length; index++) {
+
+        var details = Discount_Detail.filter(x => x.MasterId.Id == Discount_Master[index].Id)
+        var sumTakhfif = 0
+
+        for (let index = 0; index < details.length; index++) {
+
+            sumTakhfif += Math.round(
+                (parseFloat(details[index].DiscountVal) *
+                    parseFloat(details[index].Famount) *
+                    parseFloat(details[index].UnitPrice)) / 100
+            )
+            sumAllTakhfif += Math.round(
+                (parseFloat(details[index].DiscountVal) *
+                    parseFloat(details[index].Famount) *
+                    parseFloat(details[index].UnitPrice)) / 100
+            )
+
+        }
+
+        table += "<tr>"
+        table += "<td>" + (index + 1) + "</td>"
+        table += "<td>" + Discount_Master[index].SaleDocCode + "</td>"
+        table += "<td>" + SeparateThreeDigits(sumTakhfif) + "</td>"
+        table += "</tr>"
+    }
+
+    table += "<tr><td colspan=2>مجموع</td><td>" + SeparateThreeDigits(sumAllTakhfif) + "</td></tr></table>"
+    $("#ModaDetail .modal-header").empty()
+    $("#ModaDetail .modal-header").append("<h3>تخفیفات استفاده شده شعبه ی " + Discount_Master[0].ServerBranch.Title + "</h3>" +
+        //"<button class='btn btn-danger' type='button' onclick='closeModal()'>بستن</botton>"+
+        "<span style='color:red' class='fa fa-remove pointer' onclick='closeModal()'>بستن</span>")
+
+    $("#ModaDetail .modal-body").empty()
+    $("#ModaDetail .modal-body").append(table)
+
+    $("#ModaDetail .modal-footer").empty()
+    $("#ModaDetail .modal-footer").append("<button class='btn btn-danger' type='button' onclick='closeModal()'>بستن</botton>")
+    $("#ModaDetail").modal();
+}
+async function ShowDiscount_BudgetIncrease(obj) {
+
+    Obj_Discount_BudgetIncrease.OrderBy = "Id"
+    Obj_Discount_BudgetIncrease.Is_Increase = true
+    Obj_Discount_BudgetIncrease.Filter = "(ServerBranch/Id eq " + obj.Discount_ServerBranchId + ")"
+    var results = await Promise.all([
+        get_Records(Obj_Discount_BudgetIncrease),
+        // get_RecordByID(Obj_Discount_BudgetIncrease),
+    ]);
+    var Discount_BudgetIncrease = results[0]
+
+    var Tbl_Budget_Increase = "<table class='table table-bordered'>"
+    Tbl_Budget_Increase += "<tr><th>توضیحات</th><th>بودجه</th><th>بعد</th><th>زمان</th><th>تاریخ</th></tr>"
+    var budget = 0;
+    for (let index = 0; index < Discount_BudgetIncrease.length; index++) {
+        if (Discount_BudgetIncrease[index].IsIncrease == true) {
+            budget += Discount_BudgetIncrease[index].BudgetPrice
+            Tbl_Budget_Increase += "<tr style='color:green'>"
+        }
+        else {
+            budget -= Discount_BudgetIncrease[index].BudgetPrice
+            Tbl_Budget_Increase += "<tr style='color:red'>"
+        }
+
+        Tbl_Budget_Increase += "<td>" + Discount_BudgetIncrease[index].dsc + "</td>" +
+            "<td>" + SeparateThreeDigits(Discount_BudgetIncrease[index].BudgetPrice) + "</td>" +
+            "<td>" + SeparateThreeDigits(budget) + "</td>" +
+            "<td>" + foramtTime(Discount_BudgetIncrease[index].TimeCreated) + "</td>" +
+            "<td>" + foramtDate(Discount_BudgetIncrease[index].DateCreated) + "</td>"
+        Tbl_Budget_Increase += "</tr>"
+    }
+    Tbl_Budget_Increase += "</table>"
+
+    $("#ModaDetail .modal-header").empty()
+    $("#ModaDetail .modal-header").append("<h3>تراکنش ها</h3>")
+
+    $("#ModaDetail .modal-body").empty()
+    $("#ModaDetail .modal-body").append(Tbl_Budget_Increase)
+
+    $("#ModaDetail .modal-footer").empty()
+    $("#ModaDetail .modal-footer").append("<button class='btn btn-danger' type='button' onclick='closeModal()'>بستن</botton>")
+    $("#ModaDetail").modal();
+
+    //---------------------------
+}
 /*نمایش هدر فاکتور */
 function ShowHeaderFactor(Discount_Master, Discount_BaseData, Detail_Factor, Discount_WorkFlow) {
+
+
     var SumTotal = 0
     for (let index = 0; index < Detail_Factor.length; index++) {
         SumTotal += parseInt(Detail_Factor[index].DiscountVal);
     }
 
     var HeaderFactor = "<table class='table'>"
-    HeaderFactor += "<tr><td>کد فاکتور : " + Discount_Master.SaleDocCode + "</td><td>کد مشتری : " + Discount_Master.CustomerCode + "</td><td>تاریخ  : " + foramtDate(Discount_Master.OrderDate) + "</td></tr>"
-    HeaderFactor += "<tr><td style='color:red'><span>مجموع مبلغ تخفیف :</span><span id='sumTakhfif'></span></td>" +
-        "<td>مرحله : " + Discount_Master.Step + "</td>" +
-        "<td>ثبت کننده  : " + Discount_Master.TitleUser + "</td>"
-    HeaderFactor += "<td>نوع درخواست : <select id='DarTaahod'>"
-    //     for (let index = 0; index < Discount_BaseData.length; index++) {
-    // 
-    //         if (Discount_BaseData[index].Id == Discount_Master.TypeTakhfif.Id) {
-    HeaderFactor += "<option  value=" + Discount_WorkFlow[0].BaseDataPart.Id + " selected>" + Discount_WorkFlow[0].BaseDataPart.Title + "</option>"
-    //  }
-    // else {
-    //     HeaderFactor += "<option value=" + Discount_BaseData[index].Id + ">" + Discount_BaseData[index].Title + "</option>"
-    // }
+    HeaderFactor += "<tr>" +
+        "<td>کد فاکتور : " + Discount_Master.SaleDocCode + "</td>" +
+        "<td>تاریخ  : " + foramtDate(Discount_Master.OrderDate) + "</td>" +
+        "<td></td>" +
+        "</tr>"
 
-    // }
-    HeaderFactor += "</select></td>"
+    HeaderFactor += "<tr>" +
+        "<td>کد مشتری : " + Discount_Master.CustomerCode + "</td>" +
+        "<td>نام مشتری : " + Discount_Master.CustomerName + "</td>" +
+        "<td>شرح گروه مشتری : " + Discount_Master.CustCatDesc + "</td>" +
+        "</tr>"
+
+    HeaderFactor += "<tr>" +
+        "<td style='color:red'><span>مجموع مبلغ تخفیف :</span><span id='sumTakhfif'></span></td>" +
+        "<td>ثبت کننده  : " + Discount_Master.TitleUser + "</td>"
+    HeaderFactor += "<td ><span>نوع درخواست : </span>" + Discount_WorkFlow[0].BaseDataPart.Title
+    // <select id='DarTaahod'>"
+    // HeaderFactor += "<option  value=" + Discount_WorkFlow[0].BaseDataPart.Id + " selected>" + Discount_WorkFlow[0].BaseDataPart.Title + "</option>"
+    // HeaderFactor += "</select>
+    "</td>"
     "</tr>"
     HeaderFactor += "</table>"
     $("#head1 table").remove()
@@ -1189,7 +1659,7 @@ function ShowDetailFactor(Detail_Factor, obj, Log) {
     /* در صورتی که درکارتابل بود این قسمت نمایش داده میشود و لی اگر صفر بود منظور خود درخواست دهنده است که باید ویرایش نماید */
     // if (Detail_Factor[0].MasterId.Step > 0) {
     var DetailFactor = "<table class='table'>"
-    DetailFactor += "<tr><th>Step</th><th>کد فاکتور</th><th>نام کالا</th><th>نام تامین کننده کالا </th><th>عنوان برند</th><th>تعداد در کاتن</th>" +
+    DetailFactor += "<tr><th>Step</th><th>کد فاکتور</th><th>نام کالا</th><th>نام تامین کننده کالا </th><th>عنوان برند</th><th>گروه محصول</th><th>تعداد در کاتن</th>" +
         "<th>تعداد</th><th>فی کالا</th><th>مبلغ تخفیف پلکانی</th><th>مبلغ تخفیف ویژه</th>" +
         "<th>مبلغ کل تخفیفات</th><th>مبلغ نهایی بدون مالیات و عوارض</th><th>مبلغ نهایی با مالیات و عوارض</th>" +
         "<th>درصد تخفیف</th><th>درصد تخفیف</th><th>مبلغ تخفیف</th><th>تاریخچه</th></tr>"
@@ -1211,10 +1681,21 @@ function ShowDetailFactor(Detail_Factor, obj, Log) {
 برند های مربوط به خود را مشاهده نکند
 */
 
+
+        //-------------------------
         if (obj.BrandId != Detail_Factor[index].BrandId && obj.Step == 3) {
 
             continue;
         }
+        if (obj.SuppCode != Detail_Factor[index].SuppCode && obj.Step == 3) {
+
+            continue;
+        }
+        if (obj.PtypeId != Detail_Factor[index].PtypeId && obj.Step == 3) {
+
+            continue;
+        }
+        //------------------------
         if (obj.Step != Detail_Factor[index].Step) {
 
             continue;
@@ -1225,12 +1706,14 @@ function ShowDetailFactor(Detail_Factor, obj, Log) {
         }
         //در بخش ویرایش ازش استفاده میکنم
         _Factor.push(Detail_Factor[index])
+
         DetailFactor += "<tr class='rows' BrandId=" + Detail_Factor[index].BrandId + "  DataId=" + Detail_Factor[index].Id + ">" +
             "<td> " + Detail_Factor[index].Step + "</td>" +
             "<td> " + Detail_Factor[index].Id + "</td>" +
             "<td> " + Detail_Factor[index].ProductName + "</td>" +
             "<td> " + Detail_Factor[index].SuppName + "</td>" +
             "<td> " + Detail_Factor[index].BrandDesc + "</td>" +
+            "<td> " + Detail_Factor[index].pTypeDesc + "</td>" +
             "<td>" + Detail_Factor[index].NoInpack + "</td>" +
             "<td class='Famount'>" + Detail_Factor[index].Famount + "</td>" +
             "<td class='UnitPrice'>" + SeparateThreeDigits(Detail_Factor[index].UnitPrice) + "</td>" +
@@ -1301,9 +1784,6 @@ function ShowDetailFactor(Detail_Factor, obj, Log) {
     $("#Detail1").append(DetailFactor)
 }
 async function ShowDecision(obj, Detail_Factor, Discount_Confirm, MarketingDirector) {
-
-
-
     Obj_WorkFlow.OrderBy = "Id"
     Obj_WorkFlow.Is_Increase = false
     Obj_WorkFlow.Filter = "(currentStep eq " + obj.Step + ")"
@@ -1506,13 +1986,13 @@ async function InsertToInsertSaleDocsMarketingDiscounts(Discount_Master, status)
 }
 async function UpdateSaledocItems(obj) {
     _ServiceObj.typeWebService = "InsertSaleDocsMarketingDiscounts"
-debugger
+
     _ServiceObj.SqlQuery = "update SaledocItems" +
         " set vDisPercent=" + obj.Vdispercent + "" +
         " where SaleDocItemId=" + obj.SaleDocItemId + " and SaleDocId=" + obj.SaleDocId + ""
-    
+
     var Factor = await serviceDiscount(_ServiceObj);
-    debugger
+
 }
 //--------------------------
 function customConfirm(obj) {
@@ -1585,18 +2065,86 @@ function IsUserInGroup(id) {
         });
     });
 }
+//-----------------
+
+async function FillBaseData() {
+
+    /*
+    select pTypeId Id,pTypeDesc Title from vwpTypes 
+    select BrandID Id,BrandDesc Title from  VW_BrandsReportForPortal
+    select  SuppCode Id,SuppName Title from VW_SupplierReportForPortal 
+    */
+
+    _ServiceObj.IP_Server = "192.168.38.200"
+    _ServiceObj.DB = "ISS"
+    _ServiceObj.typeWebService = "GetTitleId"
+    _ServiceObj.SqlQuery = "select pTypeId Id,pTypeDesc Title from vwpTypes"
+
+
+    var results = await Promise.all([
+
+        serviceDiscount(_ServiceObj.SqlQuery = "select BrandID Id,BrandDesc Title from  VW_BrandsReportForPortal"),
+        serviceDiscount(_ServiceObj.SqlQuery = "select  SuppCode Id,SuppName Title from VW_SupplierReportForPortal"),
+        serviceDiscount(_ServiceObj.SqlQuery = "select pTypeId Id,pTypeDesc Title from vwpTypes"),
+
+        get_Records(Obj_Discount_Brand),
+        get_Records(Obj_Discount_Supplier),
+        get_Records(Obj_Discount_ProductTypes),
+
+    ]);
+
+
+    var GetTitleIdDataBrands = results[0].lstTitle_Id
+    var GetTitleIdDataSupplier = results[1].lstTitle_Id
+    var GetTitleIdDatapTypes = results[2].lstTitle_Id
+
+    var Discount_Brand = results[3]
+    var Discount_Supplier = results[4]
+    var Discount_ProductTypes = results[5]
+
+
+    promiseArray = []
+    for (let index = 0; index < GetTitleIdDataSupplier.length; index++) {
+
+        var res = Discount_Supplier.find(x =>
+            x.SuppCode == GetTitleIdDataSupplier[index].Id
+        )
+        if (res == undefined) {
+            promiseArray.push(create_Record({ Title: GetTitleIdDataSupplier[index].Title, SuppCode: GetTitleIdDataSupplier[index].Id }, "Discount_Supplier"))
+        }
+    }
+    //------------
+    for (let index = 0; index < GetTitleIdDatapTypes.length; index++) {
+        var res = Discount_ProductTypes.find(x =>
+            x.pTypeId == GetTitleIdDatapTypes[index].Id
+        )
+        if (res == undefined) {
+            promiseArray.push(create_Record({ Title: GetTitleIdDatapTypes[index].Title, pTypeId: GetTitleIdDatapTypes[index].Id }, "Discount_ProductTypes"))
+        }
+    }
+    //-----------
+
+
+
+    var results = await Promise.all(promiseArray);
+
+
+
+}
 
 //--------------------------------------------------------------------web services
 function serviceDiscount(Factor) {
     return new Promise(resolve => {
         var serviceURL = "https://portal.golrang.com/_vti_bin/SPService.svc/DiscountData"
         var request = {
-            SaleDocCode: _ServiceObj.Factor, IpServer: _ServiceObj.IP_Server,
+            SaleDocCode: _ServiceObj.Factor,
+            IpServer: _ServiceObj.IP_Server,
             DB: _ServiceObj.DB,
             typeWebService: _ServiceObj.typeWebService,
             SaleDocId: _ServiceObj.SaleDocId,
             SqlQuery: _ServiceObj.SqlQuery
         }
+
         $.ajax({
             type: "POST",
             url: serviceURL,

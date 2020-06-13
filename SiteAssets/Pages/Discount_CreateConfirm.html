@@ -64,6 +64,8 @@
 
     <script src="https://portal.golrang.com/services/discount/SiteAssets/JS/Discount_CreateConfirm.js"
         type="text/javascript" language="javascript"></script>
+    <script src="https://portal.golrang.com/services/discount/SiteAssets/JS/Discount_Junctions_tbls_Marketing.js"
+        type="text/javascript" language="javascript"></script>
 
     <script src="https://portal.golrang.com/services/discount/SiteAssets/JS/Discount_Models.js" type="text/javascript"
         language="javascript"></script>
@@ -111,7 +113,7 @@
                     شعب توسط معاونت</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" onclick="ShowBrandModirBaziaby()" data-toggle="tab" href="#menu4">تخصیص مدیر
+                <a class="nav-link" onclick="lstJunc()"  data-toggle="tab" href="#menu4">تخصیص مدیر
                     بازاریابی به برندها</a>
             </li>
             <li class="nav-item">
@@ -157,9 +159,17 @@
             <div class="tab-pane container fade" id="menu4">
                 <div class="row">
                     <div class="col-sm-12">
-                        <div id="showBrandModirBaziaby"></div>
+                        <div id="MarketingDirectoAssign">تعریف مدیران بازاریابی</div>
+                        <div id="MarketingDirectorJunction">مدیران بازاریابی</div>
                     </div>
                 </div>
+
+                <div class="row">
+                    <div class="col-sm-4" id="ProductTypeJunction">گروه محصول</div>               
+                    <div class="col-sm-4" id="BrandJunction">برند</div> 
+                    <div class="col-sm-4" id="SupplierJunction">تامین کنندگان</div> 
+                </div>
+
             </div>
             <div class="tab-pane container fade" id="menu5">
                 <div class="row">

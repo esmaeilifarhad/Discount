@@ -398,7 +398,11 @@ async function ShowIncreseDecreseMoavenatBudget(obj) {
         "{MoavenatId:" + obj.MoavenatId + "," +
         "MoavenatTitle:\"" + obj.MoavenatTitle + "\"})' " +
         "value='افزایش'    style='background-color: rgb(22, 184, 103);margin: 1px;' /></td>" +
-        "<td><input type='button'  onclick='DecreseMoavenatBudget(" + obj.MoavenatId + ")' value='کاهش'    style='background-color: red!important;margin: 1px;' /></td></tr>" +
+        "<td><input type='button' "+
+        "onclick='DecreseMoavenatBudget(" +
+        "{MoavenatId:" + obj.MoavenatId + "," +
+        "MoavenatTitle:\"" + obj.MoavenatTitle + "\"})' " +
+        "value='کاهش'    style='background-color: red!important;margin: 1px;' /></td></tr>" +
         "</table></div>"
     $("#takhsisBudget div").remove();
     $("#takhsisBudget").append(tagHtml);
@@ -449,20 +453,32 @@ async function ShowMoavenatBudgetLog(obj) {
 
     var Discount_BudgetIncrease = results[0]
 
-    var table = "<table class='table'>"
+    var table = "<table class='table table-bordered'>"
     table += "<tr>" +
         "<th>ردیف</th>" +
         "<th>ریال</th>" +
+        "<th>بعد</th>" +
         "<th>افزایش/کاهش</th>" +
         "<th>توضیحات</th>" +
         "<th>تاریخ</th>" +
         "<th>زمان</th>" +
         "</tr>"
+        var NextBudget=0
     for (let index = 0; index < Discount_BudgetIncrease.length; index++) {
-
-        table += "<tr class='rows' DataId=" + Discount_BudgetIncrease[index].Id + ">"
+        if(Discount_BudgetIncrease[index].IsIncrease == true)
+        {
+            NextBudget+=Discount_BudgetIncrease[index].BudgetPrice
+            table += "<tr style='color:green' class='rows' DataId=" + Discount_BudgetIncrease[index].Id + ">"
+        }
+        else
+        {
+            NextBudget-=Discount_BudgetIncrease[index].BudgetPrice
+            table += "<tr style='color:red' class='rows' DataId=" + Discount_BudgetIncrease[index].Id + ">"
+        }
+        
         table += "<td >" + (index + 1) + "</td>"
         table += "<td >" + SeparateThreeDigits(Discount_BudgetIncrease[index].BudgetPrice) + "</td>"
+        table += "<td >" + SeparateThreeDigits(NextBudget) + "</td>"
         table += "<td >" + (Discount_BudgetIncrease[index].IsIncrease == false ? 'کاهش' : 'افزایش') + "</td>"
         table += "<td >" + Discount_BudgetIncrease[index].dsc + "</td>"
         table += "<td >" + foramtDate(Discount_BudgetIncrease[index].DateCreated) + "</td>"
@@ -471,10 +487,24 @@ async function ShowMoavenatBudgetLog(obj) {
     }
     table += "</table>"
 
-    $("#showMoavenatTakhsisLog table").remove();
-    $("#showMoavenatTakhsisLog").append(table);
+    $("#ModaDetail .modal-header").empty()
+    $("#ModaDetail .modal-header").append("<h3>تراکنش ها</h3>")
+
+    $("#ModaDetail .modal-body").empty()
+    $("#ModaDetail .modal-body").append(table)
+
+    $("#ModaDetail .modal-footer").empty()
+    $("#ModaDetail .modal-footer").append("<button class='btn btn-danger' type='button' onclick='closeModal()'>بستن</botton>")
+    $("#ModaDetail").modal();
+
+   /* $("#showMoavenatTakhsisLog table").remove();
+    $("#showMoavenatTakhsisLog").append(table);*/
 
 
+}
+function closeModal() {
+
+    $('#ModaDetail').modal('toggle');
 }
 //مشاهده لاگ مربوط به مدیر بازاریابی
 async function ShowMarketingDirectorBudgetLog(obj) {
@@ -537,16 +567,28 @@ async function ShowShoabBudgetLog(obj) {
     table += "<tr>" +
         "<th>ردیف</th>" +
         "<th>ریال</th>" +
+        "<th>بعد</th>" +
         "<th>افزایش/کاهش</th>" +
         "<th>توضیحات</th>" +
         "<th>تاریخ</th>" +
         "<th>زمان</th>" +
         "</tr>"
+        var budgetNext=0
     for (let index = 0; index < Discount_BudgetIncrease.length; index++) {
-
-        table += "<tr class='rows' DataId=" + Discount_BudgetIncrease[index].Id + ">"
+       if(Discount_BudgetIncrease[index].IsIncrease == true)
+       {
+        budgetNext+= Discount_BudgetIncrease[index].BudgetPrice
+        table += "<tr style='color:green' class='rows' DataId=" + Discount_BudgetIncrease[index].Id + ">"
+       }
+       else
+       {
+        budgetNext-= Discount_BudgetIncrease[index].BudgetPrice
+        table += "<tr  style='color:red' class='rows' DataId=" + Discount_BudgetIncrease[index].Id + ">"
+       }
+       
         table += "<td >" + (index + 1) + "</td>"
         table += "<td >" + SeparateThreeDigits(Discount_BudgetIncrease[index].BudgetPrice) + "</td>"
+        table += "<td >" + SeparateThreeDigits(budgetNext) + "</td>"
         table += "<td >" + (Discount_BudgetIncrease[index].IsIncrease == false ? 'کاهش' : 'افزایش') + "</td>"
         table += "<td >" + Discount_BudgetIncrease[index].dsc + "</td>"
         table += "<td >" + foramtDate(Discount_BudgetIncrease[index].DateCreated) + "</td>"
@@ -726,7 +768,6 @@ async function saveTakhsisBrandToBazaryaby() {
 }
 /*افزایش و کاهش بودجه معاونت */
 async function IncreseMoavenatBudget(obj) {
-
     $('#btnSave').prop('disabled', true);
     $.LoadingOverlay("show");
 
@@ -763,22 +804,32 @@ async function IncreseMoavenatBudget(obj) {
 
 
 }
-async function DecreseMoavenatBudget(ID) {
+async function DecreseMoavenatBudget(obj) {
     $('#btnSave').prop('disabled', true);
     $.LoadingOverlay("show");
+
     var Budget = parseInt($("#takhsisBudget input[name=Budget]").val());
     Budget = parseInt(removeComma(Budget))
 
-    var obj = { IsIncrease: false, BudgetPrice: Budget, Title: "معاونت", MoavenatId: ID, DateCreated: today, TimeCreated: CurrentTime(), UserIncreaserId: _spPageContextInfo.userId }
+    var obj = { 
+        dsc: " مقدار " + Budget + " از " + obj.MoavenatTitle + " کاسته شد ",
+        IsIncrease: false,
+        BudgetPrice: Budget,
+        Title: "معاونت",
+        MoavenatId: obj.MoavenatId,
+        DateCreated: today,
+        TimeCreated: CurrentTime(),
+        UserIncreaserId: _spPageContextInfo.userId
+        }
     var createDiscount_BudgetIncrease = await create_Record(obj, "Discount_BudgetIncrease")
 
 
 
-    Obj_Discount_Moavenat.ID = ID
+    Obj_Discount_Moavenat.ID =  obj.MoavenatId
     var get_Discount_Moavenat = await get_RecordByID(Obj_Discount_Moavenat)
 
     var price = get_Discount_Moavenat.CurrentBudget - Budget
-    var update_Discount_Moavenat = await update_Record(ID, { CurrentBudget: price }, "Discount_Moavenat")
+    var update_Discount_Moavenat = await update_Record(obj.MoavenatId, { CurrentBudget: price }, "Discount_Moavenat")
 
 
 
@@ -803,7 +854,7 @@ async function IncreseShoabBudget(obj) {
     var get_Discount_Moavenat = await get_RecordByID(Obj_Discount_Moavenat)
 
     var dsc = " مقدار " + Budget + " از " + get_Discount_Moavenat.Title + " به " + get_Discount_ServerBranch.Title + " واریز شد  "
-    console.log(dsc)
+   
     var obj1 = {
         dsc: dsc,
         IsIncrease: false,
@@ -815,7 +866,7 @@ async function IncreseShoabBudget(obj) {
         UserIncreaserId: _spPageContextInfo.userId
     }
     var dsc = " مقدار " + Budget + " از " + get_Discount_Moavenat.Title + " به " + get_Discount_ServerBranch.Title + " واریز شد  "
-    console.log(dsc)
+
     var obj2 = {
         dsc: dsc,
         IsIncrease: true,
@@ -840,9 +891,6 @@ async function IncreseShoabBudget(obj) {
     var price = get_Discount_Moavenat.CurrentBudget - Budget
     var update_Discount_Moavenat = await update_Record(obj.MoavenatId, { CurrentBudget: price }, "Discount_Moavenat")
 
-
-
-
     var ShoabTakhsisBudget = await ShowShoabTakhsisBudget();
     // $('#btnSave').prop('disabled', false);
     $("#window2").data("kendoWindow").close();
@@ -855,13 +903,21 @@ async function DecreseShoabBudget(obj) {
     var Budget = $("#takhsisBudget input[name=Budget]").val();
     Budget = parseInt(removeComma(Budget))
 
+    Obj_Discount_ServerBranch.ID = obj.ServerBranchId
+    var get_Discount_ServerBranch = await get_RecordByID(Obj_Discount_ServerBranch)
+
+    Obj_Discount_Moavenat.ID = obj.MoavenatId
+    var get_Discount_Moavenat = await get_RecordByID(Obj_Discount_Moavenat)
+
+    var dsc = " مقدار " + Budget + " از " + get_Discount_Moavenat.Title + " به " + get_Discount_ServerBranch.Title + " واریز شد  "
+
     var obj1 = {
-        IsIncrease: true, BudgetPrice: Budget, Title: "شعبه", MoavenatId: obj.MoavenatId,
+        IsIncrease: true, BudgetPrice: Budget, Title: "شعبه", MoavenatId: obj.MoavenatId,  dsc: dsc,
         DateCreated: today, TimeCreated: CurrentTime(), UserIncreaserId: _spPageContextInfo.userId
     }
-
+    var dsc = " مقدار " + Budget + " از " + get_Discount_ServerBranch.Title + " به " + get_Discount_Moavenat.Title + " واریز شد "
     var obj2 = {
-        IsIncrease: false, BudgetPrice: Budget, Title: "شعبه", ServerBranchId: obj.ServerBranchId,
+        IsIncrease: false, BudgetPrice: Budget, Title: "شعبه", ServerBranchId: obj.ServerBranchId,  dsc: dsc,
         DateCreated: today, TimeCreated: CurrentTime(), UserIncreaserId: _spPageContextInfo.userId
     }
 
